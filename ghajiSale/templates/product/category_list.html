@@ -1,0 +1,179 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %} Categories {% endblock %}
+    <!-- <script type="module" src="src/js/controller/salesController.js"></script> -->
+{% block styles %}
+    <link rel="stylesheet" href="{% static '/src/css/page/addProduct.css' %}">
+
+{% endblock%}
+{% block pageName %} Category List {%endblock%}
+
+{% block scripts %}
+    <script type="module" src="{% static '/src/js/controller/categoryListController.js' %}"></script>
+{% endblock %}
+{% block content %}
+    <section class="content px-5 py-10 overflow-y-scroll box-border h-9/10 mb-10">
+                    <section  class="tableContainer categoriesContainer rounded-lg shadow-md/50 shadow-gray-400  py-3 bg-white categories">
+                    <header class="flex justify-between px-6 items-center">
+                    <form method="GET" >
+                        <label class="block text-sm font-medium mb-1">Search Product</label>
+                    <div class="flex gap-2">
+                    <div class="inputText flex items-center  rounded-md p-2.5 w-80">
+                    <i data-lucide="search" class="w-5 h-5 text-gray-500"></i>
+                    <input 
+                    type="text"
+                    placeholder="Search product category"
+                    name='q'
+                    class="flex-1 ml-3 outline-none border-none focus:ring-0">
+                    </div>
+                        <!-- Button -->
+                        <button 
+                            type="submit" 
+                            class="neo-btn success applyFilter">
+                            Apply
+                        </button>
+                    </div>
+                
+                    </form>
+                    
+                    
+
+                    <button class="neo-add addCategory flex px-4 py-2 rounded-md gap-1.5 text-white items-center mt-4 shrink font-bold">
+                    <i data-lucide="plus" class="w-5 h-5 "></i>
+                    <span>Add category</span>
+                    </button>
+                    </header>
+                    <section class="table mt-6 mb-3 w-full">
+                        <table class="w-full table-auto border-collapse ">
+                            <thead>
+                                <tr class="fields  text-gray-600 text-xm font-medium">
+                                    <th class="py-1 border-b border-gray-300 w-140"><div><p>Category</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                    <th class="py-1 border-b border-gray-300 w-fit text-xm font-medium"><p>Action</p></th>
+                                    <th class="py-1 border-b border-gray-300"><div><p>Total Products</p><div class="absolute right-2"><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                    <th class="py-1 border-b border-gray-300"><div><p>Total Earning</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                </tr>
+                            </thead>
+                            <tbody class="attribute">
+                                {% for category in page_obj %}
+                                <tr class="hover:bg-gray-50 ">
+                                    <td class=" py-2 border-b border-gray-200">
+                                        <div class="avater-wrapper flex items-center gap-2">
+                                            <div class="avater bg-white rounded-md w-13 h-13 flex items-center justify-center mr font-semibold grow-0 shrink-0">
+                                                <img src="./assets/images/product-23.png" alt="" srcset="" class="w-13 h-13">
+                                            </div>
+                                            <div class="text-left">
+                                                <p class="font-medium ">{{ category.name }}</p>
+                                                <p class="text-sm text-gray-500">{% if category.description %}{{ category.description }}{%else%}No description available.{% endif %}</p>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                    <td class="px-4 border-b  border-gray-200 text-center action">
+                                        <button class="button add edit" data-id="{{ category.id }}">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="button add negative trash">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="trash" class="w-5 h-5"></i>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">{{ category.product_count }}</td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">N{{ category.total_profit|floatformat:2 }}</td>
+                                    
+                                </tr>
+                                {% endfor %}
+                                
+                                
+                                <!-- More rows as needed -->
+                            </tbody>
+                        </table>
+                        <section class="px-4 py-4">
+                            {% include 'partials/pagination.html' %}
+
+
+                        </section>
+
+                    
+                    </section>
+
+                </section>
+                </section>
+                <!-- modaal -->
+                <div class="modal-overlay hidden"></div>
+                            <div class="modal rounded-lg shadow-lg p-6 hidden bg-white w-96 .animate-fadeInUp delay-200 modal-detail" data-modal="add-category">
+                                <div class="model-header">
+                                <h2 class="text-xl font-semibold mb-4">Add New Category</h2>
+                                <button class="close close-modal"><i data-lucide="x"></i></button>
+                                </div>
+                                <div class="model-body product-detail">
+                                <form method="POST" enctype="multipart/form-data">
+                                    {% csrf_token%}
+                                    {% include 'partials/form_field.html' with field=category_form.name attrs='id:category-name' placeholder='placeholder:Enter Name of category' %}
+                                    {% include 'partials/form_field.html' with field=category_form.category_image attrs='id:image' placeholder='placeholder:choose a file' %}
+                                    <div>
+                                        <label for="description" class="block text-sm font-medium mb-1">Description</label>
+                                        {{ category_form.description|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:description"|attr:"rows:4"|attr:"cols:50" }}
+                                    </div>
+                                    <div class="flex justify-end gap-3">
+                                        <button type="button" class="neo-btn neutral modal-close px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-gray-800 close-modal">Cancel</button>
+                                        <button type="submit" class="neo-btn success px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white">Add Category</button>
+                                    </div>
+                                </form>
+                                </div>
+                            </div>
+                            <div class="modal content .animate-fadeInUp delay-200 hidden" data-modal="category-quick-view">
+                                <div class="model-header  ">
+                                <h2 class="text-xl font-semibold">Detail of Smart Phone</h2>
+                                    <button class="close close-modal"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                </div>
+                                <section class="model-body " >
+                                    <div class="modalContent">
+                                    <div class="flex gap-1.5 w-full ">
+                                    <figure class="w-50 flex-1">
+                                        <img src="./assets/images/product-23.png" alt="" srcset="" class="w-32 h-32">
+                                    </figure>
+                                    <ul class=" flex-2">
+                                        <li>
+                                            <p>Category:</p><span> Baverages</span>
+                                        </li>
+                                        <li class="text-sm">
+                                            <p>Total Product:</p><span>$1000</span>
+                                        </li>
+                                        <li class="text-sm">
+                                            <p class="flex-2">Active Product:</p> <span class="flex-1">2000</span>
+                                        </li>
+                                        <li class="status">
+                                            <p>status:</p>
+                                            <div class="relative w-13 h-5 inline-block">
+                                            <input type="checkbox" name="" id="switch-component-5" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <label for="switch-component-5" class="absolute top-0.5 left-0 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <p>Description:</p><span class="text-sm"> Choose from wide range of beauty </span>
+                                        </li>
+                                    </ul>
+                                    </div>
+                                    <div class="totalEarning flex justify-between items-center mt-4 border-t pt-4">
+                                            <p class="font-bold text-xl">Total Earning:</p>
+                                            <div class=" font-medium text-xl text-green-600">$5000</div>
+                                    </div>
+                                    <div class="modalActions flex justify-end gap-3 mt-4">
+                                        <button class=" cancelChanges neo-btn neutral neo-actions px-3">cancel</button>
+                                        <button class="px-3 saveChanges neo-btn success neo-actions">Save Changes</button>
+                                    </div>
+                                    </div>
+                                    </section>
+                            </div>
+
+{% endblock %}

@@ -1,0 +1,140 @@
+.sale-stat-card{
+    background-color: var(--bg-secondary);
+    border-radius: 0.7rem;
+    padding: 0.95rem;
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: var(--shadow-neu);
+    border: 1px solid var(--color-gray-300);
+    transition: transform 0.2s ease-in-out;
+}
+.sale-stat-card.expected-cash{
+    background-color: var(--color-gray-600);
+
+}
+.sale-stat-card:hover {
+    transform: translateY(-5px);
+}
+.sale-stat-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+.sale-stat-header i {
+    color: var(--primary);
+}
+.stat-card-value{
+    font-size: 1.2rem;
+    font-weight: 550;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+.stat-card-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.75rem;
+}
+
+.stat-card-info{
+    min-width: 0;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+
+    color: #6b7280;
+}
+
+.stat-value{
+    margin-top: 0.75rem;
+
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+
+    font-family: sans-serif;
+
+}
+.stat-hint {
+    margin-top: 0.5rem;
+
+    font-size: 0.75rem;
+
+    color: #6b7280;
+}
+
+.stat-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background-color: var(--bg);
+
+    box-shadow: var(--shadow-neu-inset)
+}
+
+.btn-sync{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 14px;
+    box-shadow: var(--shadow-neu-sm);
+    padding: 0.5rem;
+    color: green;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+
+.dropdown-option,#pick-date-btn{
+    width:100%;
+    text-align:left;
+    padding:10px;
+    border-radius:8px;
+    transition:.2s;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.dropdown-option:hover{
+    background:var(--bg);
+}
+
+.report-icon{
+    width:52px;
+    height:52px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:8px;
+
+    color:#0891b2;
+
+    box-shadow:
+        6px 6px 12px #c8d0e7,
+       -6px -6px 12px #ffffff;
+}
+
+.report-icon svg{
+    width:24px;
+    height:24px;
+    color: var(--primary);
+}

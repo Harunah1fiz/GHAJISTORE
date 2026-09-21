@@ -1,0 +1,77 @@
+{% load static %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link rel="stylesheet" href="{% static '/src/css/tailwind.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/base.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/component.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/layout.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/style.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/page/login.css' %}">
+        <title>Login Page</title>
+    </head>
+    <body>
+        <main class="main-content mt-0 borde h-screen">
+            <section class=" flex items-center justify-center border h-full">
+                    <div class="container flex gap-6  h-full ">
+                        <div class="flex  basis-1/2 items-center justify-center">
+                            <div class=" w-3/4 ">
+                                <section class="neo-inner card flex flex-col gap-5 m-25 mb-2 w-90 p-8 ">
+                                    <div class="card-header pb-0 text-left bg-transparent flex flex-col gap-1 mb-3">
+                                        <h3 class=" bg-clip-text font-bold text-3xl text-transparent bg-linear-to-b  from-cyan-700 to-blue-600 ">Welcome back</h3>
+                                        <p class="mb-0 text-sm text-gray-500">Enter your email and password to sign in</p>
+                                    </div>
+                                    <div class="card-body ">
+                                        {% if messages %}
+                                            <div class="space-y-2 mb-4">
+                                                {% for message in messages %}
+                                                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                                                        {{ message }}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <form method="post" action="" class="flex flex-col gap-2">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ next }}">
+                                            <div class="mb-3">
+                                                <label for="username" class="block mb-2 font-bold text-sm">Username</label>
+                                                <input id="username" name="username" type="text" class="form-control inputText" placeholder="Username" aria-label="Username" required value="{{ request.POST.username|default:'' }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="password" class="block mb-2 font-bold text-sm">Password</label>
+                                                <input id="password" name="password" type="password" class="form-control inputText" placeholder="Password" aria-label="Password" required>
+                                            </div>
+                                            <div class="form-check flex items-center mb-4 gap-2">
+                                                <input name="remember_me" class="form-check-input appearance-none w-11 h-5 border rounded-full relative checked:bg-linear-to-r from-cyan-700 to-blue-500  transition-colors duration-300 inset-shadow-2xs inset-shadow-gray-500 border-gray-200" type="checkbox" id="rememberMe">
+                                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                                            </div>
+                                            <div class="">
+                                            <button type="submit" class="sign-in border cursor-pointer py-1.5 rounded-md w-full">Sign in</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                </section>
+                        </div>
+                        </div>
+                        <div class= "flex-1 flex  basis-5/12 relative overflow-x-hidden ">
+                            <div class="absolute h-full top-0 -right-30 w-10/10 rounded-bl-sm   -skew-x-10  overflow-hidden">
+                                <div class="oblique-image h-full bg-cover z-0  " style="background-image: url('assets/images/curved6.jpg');"></div>
+                            </div>
+
+                        </div>
+
+                        </div>
+                    </section>
+                                
+
+        </main>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script  src="main.js"></script>
+    </body>
+    </html>

@@ -1,0 +1,83 @@
+    <header id="top-bar" class="sticky top-0 z-10  border-b border-gray-200">
+    <div class="flex items-center justify-between px-6 py-2.5">
+
+                        <div class="flex items-center">
+                            <button id="toggle-sidebar" class="text-gray-500 hover:text-gray-700 mr-4">
+                                <i class="fas fa-bars"></i>
+                            </button>
+
+                            <h1 class="text-xl font-semibold text-gray-800 flex items-center">
+                                <span class="mr-2">{{ active_page }}</span>
+                            </h1>
+                        </div>
+
+                        <div class="flex items-center space-x-6">
+
+                            <!-- Notification -->
+                            <div class="relative">
+                                <button id="notification" class="text-gray-500 hover:text-gray-700 relative">
+                                    <i class="fas fa-bell"></i>
+                                    {% if unread_notifications_count %}
+                                    <span class="absolute inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-900 text-white text-[11px] px-1.5 p-2 -top-1 -right-1">{{ unread_notifications_count }}</span>
+                                    {% endif %}
+                                </button>
+                                <div id="notification-panel" class="hidden absolute right-0 mt-3 w-96 rounded-3xl border border-slate-200 bg-white shadow-lg p-4 text-sm text-slate-700 z-50">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <p class="text-base font-semibold">Notifications</p>
+                                            <p class="text-xs text-slate-500">Recent system events</p>
+                                        </div>
+                                        <button id="mark-all-read" class="text-xs text-slate-500 hover:text-slate-900">Mark all read</button>
+                                    </div>
+                                    <div id="notification-items" class="space-y-3 max-h-80 overflow-y-auto">
+                                        <div class="text-center text-xs text-slate-400">Loading notifications...</div>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+                                        <span id="notification-meta"></span>
+                                        <button id="delete-all-notifications" class="text-slate-500 hover:text-red-500">Clear all</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Profile -->
+                            <div class="profile flex items-center relative cursor-pointer">
+                                <img src="./assets/images/destination_2.jpg" alt=""
+                                    class="rounded-full w-10 h-10 shadow-sm"
+                                    id="profile-detail">
+
+                                <span id="online-status"
+                                    class="absolute bottom-0 left-7 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full">
+                                </span>
+                            </div>
+
+                        </div>
+    </div>
+
+    <!-- dropdown -->
+    <div class="user-menu hidden w-64 absolute right-3 m-2 mt-0.5 px-4 py-4 flex flex-col gap-4 rounded-2xl shadow-lg bg-white border border-gray-200">
+
+        <div class="flex items-center gap-3 border-b border-gray-200 pb-4">
+            <div class="imageContainer">
+            <img src="./assets/images/destination_2.jpg" class="profile-image w-12 h-12 rounded-full">
+            </div>
+            <span class=" text-sm leading-tight">
+                <p class="text-base tracking-wide font-bold">{{ request.user.get_full_name|default:request.user.username }}</p>
+                <p class="text-xs tracking-wide text-slate-500">{{ user_role|default:'Staff' }}</p>
+            </span>
+        </div>
+        <ul class="menu-list text-sm space-y-3">
+            <li class="flex items-center gap-3 hover:text-slate-900 cursor-pointer">
+            <a href="{% url 'profile' %}" class="flex items-center gap-3">
+                <i data-lucide="user-pen"></i>
+                <span>My Profile</span>
+            </a>
+            </li>
+        </ul>
+
+        <div class="pt-4 border-t border-gray-200 hover:text-red-500 cursor-pointer flex items-center gap-2">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            <a href="{% url 'logout' %}" class="block">Logout</a>
+        </div>
+
+    </div>
+</header>

@@ -1,0 +1,311 @@
+    <div class="module_inner product_profit product_profit_margin p-4 rounded-lg shadow-md gap-4">
+
+    <!-- HEADER -->
+    <section class="flex justify-between items-center">
+        <p class="font-medium">Inventory</p>
+
+        <div class="flex items-center gap-2">
+            <span class="text-sm">Package Mode</span>
+            <div class="relative">
+                {{ pricing_form.is_pack|add_class:"peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full checked:bg-blue-500"|attr:"id:is_pack" }}
+                <label for="is_pack"
+                    class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-5 transition-transform cursor-pointer">
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== -->
+    <!-- PACKAGE SECTION -->
+    <!-- ===================== -->
+    <div class="package-details hidden flex flex-col gap-4 animate-fadeInDown">
+
+        <p class="text-sm text-gray-500 font-medium border-b pb-1">Package Setup</p>
+
+        <!-- Selling Price -->
+        {% include 'partials/form_field.html' with field=pricing_form.case_selling_price attrs="id:case_price" placeholder='placeholder: Selling Price'%}
+
+        <!-- Cost + Count -->
+        <div class="grid grid-cols-2 gap-4">
+            {% include 'partials/form_field.html' with field=pricing_form.case_cost attrs="id:case_cost" placeholder='placeholder: Selling Price'%}
+            
+            {% include 'partials/form_field.html' with field=pricing_form.case_count attrs="id:case_count" placeholder='placeholder: Selling Price'%}
+        </div>
+
+        <!-- Pack Size + Damage -->
+        <div class="grid grid-cols-2 gap-4">
+            {% include 'partials/form_field.html' with field=pricing_form.pack_size attrs="id:pack_size" placeholder='placeholder: Selling Price'%}
+
+            <div>
+                <label class="block text-sm mb-1">Damaged pieces</label>
+                <input type="number" id="damaged_piece" value="0"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===================== -->
+    <!-- RETAIL SECTION -->
+    <!-- ===================== -->
+    <div class="retail-details flex flex-col gap-4 animate-fadeInDown">
+
+        <p class="text-sm text-gray-500 font-medium border-b pb-1">Retail Setup</p>
+
+        {% include 'partials/form_field.html' with field=pricing_form.cost attrs="id:cost" placeholder='placeholder: Selling Price'%}
+
+        <div class="grid grid-cols-2 gap-4">
+            {% include 'partials/form_field.html' with field=inventory_form.quantity attrs="id:Qty" placeholder='placeholder: Selling Price'%}
+
+            <div>
+                <label class="block text-sm mb-1">Damaged Unit</label>
+                <input type="number" value="0"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CALCULATIONS -->
+    <!-- ===================== -->
+    <div class="border-t pt-3 flex flex-col gap-3">
+
+        <p class="text-sm text-gray-500 font-medium">Auto Calculations</p>
+
+        <div class="grid grid-cols-2 gap-4">
+            <input type="text" id="gross_proj" placeholder="Gross Projection"
+                class="border rounded-md px-3 py-2 bg-gray-100" disabled />
+
+            <input type="text" id="markup_mar" placeholder="Markup %"
+                class="border rounded-md px-3 py-2 bg-gray-100" disabled />
+        </div>
+
+        <input type="text" id="gross_margin" placeholder="Gross Margin %"
+            class="border rounded-md px-3 py-2 bg-gray-100" disabled />
+    </div>
+
+</div>
+
+
+
+
+
+<div
+            class="module_inner product_profit product_profit_margin p-3 rounded-lg shadow-md gap-2"
+            >
+            <section class="flex justify-between items-center">
+                <p class="mb-4 font-medium">Inventory</p>
+                <div class="set_package flex items-center">
+                <p>Package Mode</p>
+                <div class="relative mt-2">
+                    {{ pricing_form.is_pack|add_class:"peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full transition-colors duration-200 checked:bg-blue-500"|attr:"id:is_pack" }}
+                    <!-- <input type="checkbox" name="" id="is_pack" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full   transition-colors duration-200 checked:bg-indigo-500"> -->
+                    <label
+                    for="is_pack"
+                    class="absolute top-2.5 left-2 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5 peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"
+                    ></label>
+                </div>
+                </div>
+            </section>
+
+            <section>
+                <section class="flex-1 flex flex-col">
+                <!-- <div class="mb-4">
+                    <label for="item-id" class="block text-sm font-medium mb-1"
+                    >Item ID</label
+                    >
+                    <input
+                    type="text"
+                    id="item-id"
+                    name="item-id"
+                    placeholder="EG. 0001"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2"
+                    required
+                    />
+                </div> -->
+                <div class="mb-4 package-details hidden animate-fadeInDown delay-200">
+                    {% include 'partials/form_field.html' with field=pricing_form.case_selling_price attrs="id:case_price" placeholder='placeholder:Enter Package Selling Price' %}
+                    <!-- <input type="number" id="case_price" name="case_price" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+                </div>
+                    {% include 'partials/form_field.html' with field=pricing_form.cost attrs="id:cost" placeholder='placeholder:Enter Product Cost' %}
+                    <!-- <input type="number" id="cost" name="cost" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+
+                <!-- apear when pckg is true -->
+                <div class="package-details hidden animate-fadeInDown delay-200">
+
+                    <div class="mb-4 flex justify-between gap-4">
+                    <!-- <div>
+                        <label
+                        for="case_cost"
+                        class="block text-sm font-medium mb-1"
+                        >Case Cost</label
+                        >
+                        {{ pricing_form.case_cost|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:case_cost" }}
+                    </div> -->
+                    {% include 'partials/form_field.html' with field=pricing_form.case_cost attrs="id:case_cost" placeholder='placeholder:Enter Case Cost' %}
+                    <!-- <input type="number" id="case_cost" name="cost" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+                    <div class="">
+                        <label for="count" class="block text-sm font-medium mb-1"
+                        >Case Count</label
+                        >
+                        {{ pricing_form.case_count|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:case_count"}}
+                    </div>
+                    <!-- <input type="number" id="case_count" name="cost" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+                    </div>
+                    <div class="mb-4 flex justify-between gap-4">
+                    <div class="">
+                        <label for="count" class="block text-sm font-medium mb-1"
+                        >(Pack Size)</label
+                        >
+                        {{ pricing_form.pack_size|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:pack_size" }}
+                        <!-- <input type="number" id="pack_size" name="cost" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+                    </div>
+                    <div class="w-1/2">
+                        <label
+                        for="damaged-piece"
+                        class="block text-sm font-medium mb-1"
+                        >Damaged pieces</label
+                        >
+                        {{pricing_form.damaged_units|add_class:""|attr:"id:damaged_master"}} 
+                        {% if pricing_form.damaged_units.errors %}
+                        <p class="text-red-500 text-xs italic mt-1">
+                        {{ pricing_form.damaged_units.errors.0 }}
+                        </p>
+                        {% endif %}
+                        <input
+                        type="number"
+                        id="damaged_piece"
+                        name="damaged_piece"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        value="0"
+                        />
+                    </div>
+                    </div>
+                </div>
+                <div
+                    class="mb-4 flex justify-between gap-4 retail-details animate-fadeInDown delay-200"
+                >
+                    <div class="">
+                    <label for="count" class="block text-sm font-medium mb-1"
+                        >Quantity</label
+                    >
+                    {{ inventory_form.quantity|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:Qty" }}
+                    <!-- <input type="number" id="Qty" name="cost" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+                    </div>
+                    <div class="w-1/2">
+                    <label
+                        for="damaged_unit"
+                        class="block text-sm font-medium mb-1"
+                        >Damaged Unit</label
+                    >
+                    <input
+                        type="number"
+                        id="damaged_unit"
+                        name="damaged_unit"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        value="0"
+                    />
+                    </div>
+                </div>
+                <div class="mb-4 flex justify-between gap-4">
+                    <div class="">
+                    <label for="count" class="block text-sm font-medium mb-1"
+                        >Gross projection</label
+                    >
+                    <input
+                        type="text"
+                        id="gross_proj"
+                        name="gross_proj"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        disabled
+                    />
+                    </div>
+                    <div class="w-1/2">
+                    <label for="category" class="block text-sm font-medium mb-1"
+                        >Markup Margin(%)</label
+                    >
+                    <input
+                        type="text"
+                        id="markup_mar"
+                        name="markup_mar"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        disabled
+                    />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="item-id" class="block text-sm font-medium mb-1"
+                    >Gross Margin(%)</label
+                    >
+                    <input
+                    type="text"
+                    id="gross_margin"
+                    name="gross_margin"
+                    placeholder="EG. 0001"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2"
+                    disabled
+                    />
+                </div>
+                </section>
+            </section>
+            </div>
+
+
+            <section class=" flex flex-col">
+                
+                <!-- <div class="mb-4">
+                    <label for="item-id" class="block text-sm font-medium mb-1"
+                    >Item ID</label
+                    >
+                    <input
+                    type="text"
+                    id="item-id"
+                    name="item-id"
+                    placeholder="EG. 0001"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2"
+                    required
+                    />
+                </div> -->
+                    {% include 'partials/form_field.html' with field=pricing_form.cost attrs="id:cost" placeholder='placeholder:Enter Product Cost' %}
+                    <!-- <input type="number" id="cost" name="cost" class="w-full border border-gray-300 rounded-md px-3 py-2 " required> -->
+
+                <!-- apear when pckg is true -->
+                
+                <div class="mb-4 flex justify-between gap-4">
+                    <div class="">
+                    <label for="count" class="block text-sm font-medium mb-1">Gross projection</label>
+                    <input
+                        type="text"
+                        id="gross_proj"
+                        name="gross_proj"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        disabled
+                    />
+                    </div>
+                    <div class="w-1/2">
+                    <label for="category" class="block text-sm font-medium mb-1"
+                        >Markup Margin(%)</label
+                    >
+                    <input
+                        type="text"
+                        id="markup_mar"
+                        name="markup_mar"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        disabled
+                    />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="item-id" class="block text-sm font-medium mb-1"
+                    >Gross Margin(%)</label
+                    >
+                    <input
+                    type="text"
+                    id="gross_margin"
+                    name="gross_margin"
+                    placeholder="EG. 0001"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2"
+                    disabled
+                    />
+                </div>
+                </section>

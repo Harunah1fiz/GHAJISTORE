@@ -1,0 +1,56 @@
+<div id="reportModal"
+     class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50 border-4 border-white animate-modalUp backdrop-blur-sm">
+<!-- modal p-6 rounded-lg w-98 z-99 bg-white/5 backdrop-blur-md border border-white/10 modal-detail -->
+    <div class="modal rounded-lg shadow-lg p-6 bg-white w-96 .animate-fadeInUp delay-200 modal-detail">
+
+        <div class="flex justify-between items-center">
+
+            <div>
+
+                <h2 id="modalTitle"
+                    class="text-2xl font-semibold text-cyan-600">
+                </h2>
+
+                <p id="modalSubtitle"
+                    class="text-gray-400 text-sm mt-1">
+                </p>
+
+            </div>
+
+            <button id="closeReportModal">
+                <i data-lucide="x"></i>
+            </button>
+
+        </div>
+
+        <form id="reportForm" class="space-y-5 mt-6">
+
+            <!-- JS inserts fields here -->
+
+            <div id="modalFields"></div>
+
+            <div class="flex justify-end gap-3">
+
+                <button
+                    type="button"
+                    class="neu-pressable px-5 py-2 rounded-xl " id="closeReportModal">
+                    
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="neu-pressable px-5 py-2 rounded-xl bg-cyan-600 text-white">
+
+                    Submit Report
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

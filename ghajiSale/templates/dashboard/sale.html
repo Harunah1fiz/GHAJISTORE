@@ -1,0 +1,207 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %} SalesMonitor {% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static '/src/css/page/sale.css' %}">
+    <link rel="stylesheet" href="{% static '/src/css/page/addProduct.css' %}">
+{% endblock%}
+{% block scripts %}
+<script type="module" src="{% static '/src/js/controller/salesController.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+    <section class="content px-6 py-2 overflow-y-scroll box-border h-10/10 mb-8">
+    <!-- SYNC BUTTON -->
+    <!-- <div class="flex justify-end mb-3">
+        <button class="btn-sync neo-btn px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span class="sync-text">Sync</span>
+        </button>
+    </div> -->
+    <section class="meter grid grid-cols-1 md:grid-cols-2 gap-6 ">
+        <div class="saleSearch neo-inner border flex flex-col h-full text-black ">
+            <!-- Search Box -->
+            <div class="search mb-4 relative">
+                <label class="block text-sm font-medium mb-1">Search Product</label>
+                <div class="customCheckBoxHolder">
+                    <input type="checkbox" id="cCB1" class="customCheckBoxInput">
+                    <label for="cCB1" class="customCheckBoxWrapper">
+                        <div class="customCheckBox">
+                            <div class="inner">Look-Up</div>
+                        </div>
+                    </label>
+
+                </div>
+                                <div class="inputText flex items-center  rounded-md p-2.5 gap-2">
+                    <i data-lucide="search" class="w-5 h-5 text-gray-500"></i>
+                    <input 
+                    type="text"
+                    placeholder="Search product name / scan barcode"
+                    class="product__search_field flex-1 ml-2 font-bold text-[13px] outline-none"
+                    autofocus
+                    >
+                    <!-- <button class="btn-lookup neo-btn p-1 rounded text-sm" title="Quick lookup">
+                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                    </button> -->
+                    <button class="btn-clear neu neu-pressable p-1" title="Clear input">
+                        <i data-lucide="x" class="w-4 h-4 hover:text-red-600"></i>
+                    </button>
+                </div>
+            </div>
+    <!-- Category Filters -->
+    <!-- <div class="categories flex gap-2  p-2 mb-2 h-12">
+      <button class="neo-btn ">All</button>
+      <button class=" neo-btn ">Drinks</button>
+      <button class="  neo-btn ">Snacks</button>
+      <button class="  neo-btn ">Toiletries</button>
+      <button class="  neo-btn ">Household</button>
+    </div> -->
+
+    <!-- Product List -->
+    <div class="neu-inset productList h-85">
+      <p class="font-semibold text-gray-600 mb-2">Products</p>
+
+      <!-- Example Product Row -->
+      <ul class="product__list h-full overflow-y-scroll py-5 relative ">
+        <div class="absolute top-1 font-bold text-[15px] text-red-600 left-5 flex items-center gap-1.5">
+          <i data-lucide="smile" class="w-8 h-8"></i>
+          <span>Start by searching for a product. thank you</span>
+        </div>
+        </ul>
+        </div>
+    </div>
+
+
+    <!-- RIGHT SIDE: Cart & Payment -->
+    <div class="flex flex-col h-full">
+
+    <!-- CART ITEMS -->
+    <div class="cartBox neo-inner bg-white relative rounded-md p-2 flex-1 "> 
+        <div class="font-bold mb-2 text-lg">Cart</div>
+        <div class="cartItemContainer overflow-y-auto  h-50  px-5 w-full absolute left-0">
+        <table class="cartItem w-full text-left table-auto  h-20 overflow-y-auto">
+        <thead class="sticky top-0">
+        <tr>
+        <th>Item Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+        </tr>
+        </thead>
+        <tbody class="tableBody">
+        
+        </tbody>
+        </table>
+        </div>
+    
+    </div>
+    
+
+    <!-- TOTALS & PAYMENT -->
+    <div class="subTotal neo-inner mt-4 bg-white border rounded-md p-4">
+    
+    </div>
+</div>
+</section>
+</section>
+<div class="modal-overlay hidden"></div>
+    <!-- <div class="modal rounded-lg shadow-lg p-6 bg-white w-96 hidden" data-modal="check-out">
+            <div class="model-header">
+                <h2 class="text-xl font-semibold mb-4">Checkout</h2>
+                <button class="close close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="model-body">
+            <div class="content max-h-6 border w-full">
+                
+            </div>
+            <form>
+                <div class="flex justify-end gap-3">
+                    <button type="button" class="neo-btn neutral modal-close px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-gray-800">Cancel</button>
+                    <button type="submit" class="neo-btn success px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white">Save</button>
+                    <button type="submit" class="neo-btn success px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white">Save & Print reciept</button>
+
+                </div>
+            </form>
+            </div>
+        </div> -->
+    <div class="modal rounded-2xl shadow-2xl p-6 bg-white w-[420px] hidden" data-modal="check-out">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <h2 class="text-xl font-semibold">Receipt Preview</h2>
+        <button class="close close-modal text-gray-500 hover:text-black">
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+
+    <!-- RECEIPT CONTENT -->
+    <div class="content bg-gray-50 p-4 rounded-lg font-mono text-sm">
+
+        <!-- Business Info -->
+        <div class="text-center mb-4">
+            <h3 class="font-bold text-base">Ghaji Stores</h3>
+            <p class="text-xs text-gray-500">Adamawa, Nigeria</p>
+            <p class="text-xs text-gray-500">Tel: 070-671-0000</p>
+        </div>
+
+        <!-- Date -->
+        <div class="flex justify-between text-xs mb-3">
+            <span>Date:</span>
+            <span id="receipt-date">--</span>
+        </div>
+
+        <!-- Items -->
+        <div class="border-t border-b py-2 max-h-40 overflow-y-auto">
+            <!-- Example Row -->
+            <div class="flex justify-between">
+                <span>Coke x2</span>
+                <span>₦400</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Bread x1</span>
+                <span>₦700</span>
+            </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="mt-3 space-y-1 text-sm">
+            <div class="flex justify-between">
+                <span>Total:</span>
+                <span id="receipt-total">₦0</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Received:</span>
+                <span id="receipt-received">₦0</span>
+            </div>
+            <div class="flex justify-between font-bold">
+                <span>Balance:</span>
+                <span id="receipt-balance">₦0</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4 text-xs text-gray-500">
+            Thank you for your purchase!
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex justify-end gap-3 mt-5">
+        <button type="button" class="modal-close px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-gray-800">
+            Cancel
+        </button>
+
+        <button type="button" class="btn-print px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white">
+            Print Receipt
+        </button>
+
+        <button type="button" class="btn-save-print px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white">
+            Save Tran
+        </button>
+    </div>
+</div>
+
+    </section>
+            
+{% endblock %}

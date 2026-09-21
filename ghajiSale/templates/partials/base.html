@@ -1,0 +1,46 @@
+{% load static %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+
+        <link rel="stylesheet" href="{% static '/src/css/tailwind.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/base.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/component.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/layout.css' %}">
+        <link rel="stylesheet" href="{% static '/src/css/style.css' %}">
+        {% block styles %}{% endblock %}
+        {% block scripts %}{% endblock %}
+    <title>{%block title %} {% endblock %}</title>
+    </head>
+    <body>
+        <main class="flex overflow-y-hidden h-screen">
+            {% include 'partials/navigation.html' %}
+            <section class="grow">
+                <div class="alert-container hidden"></div>
+                {% include 'partials/topbar.html' %}
+            {% if messages %}
+                <div class="px-6 py-4 space-y-3">
+                    {% for message in messages %}
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800 shadow-sm">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}
+            {% endblock %}
+            </section>
+        </main>
+
+        <script  src="{% static '/src/js/main.js' %}"></script>
+        <script  src="{% static '/src/js/utils/fuse.min.js' %}"></script>
+        <script src="{% static 'src/js/utils/lucide.min.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        
+        
+    </body>

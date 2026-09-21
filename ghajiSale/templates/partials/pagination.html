@@ -1,0 +1,11 @@
+
+<div class="pagination flex justify-end items-center gap-3 mt-4">
+    {% if page_obj.has_previous %}
+    <button class="px-2 py-2 rounded-md text-white items-center"><a href="?page={{ page_obj.previous_page_number }}&category={{ request.GET.category }}&status={{ request.GET.status }}&q={{ request.GET.q }}"><i data-lucide="chevron-left"></i></a></button>
+    {% endif %}
+    <span class="text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+ {% if page_obj.has_next %}
+    <button class="px-2 py-2 rounded-md text-white items-center"><a href="?page={{page_obj.next_page_number}}&category={{ request.GET.category }}&status={{ request.GET.status }}&q={{ request.GET.q }}"><i data-lucide="chevron-right"></i></a></button>
+    {% endif %}
+</div>

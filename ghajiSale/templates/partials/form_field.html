@@ -1,0 +1,15 @@
+{% load widget_tweaks %}
+<div class="mb-4">
+    <label for="{{ field.id_for_label }}" class="block text-sm font-medium mb-1">
+        {{ field.label }}
+    </label>
+
+    {{ field|add_class:" w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"|attr:attrs|attr:placeholder }}
+
+    {% if field.errors %}
+        <p class="text-red-500 text-xs italic mt-1">
+            {{ field.errors.0 }}
+        </p>
+    {% endif %}
+</div>
+

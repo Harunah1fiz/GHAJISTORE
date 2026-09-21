@@ -1,0 +1,465 @@
+    {% extends 'partials/base.html' %} {% load static %} 
+    {% load widget_tweaks %} 
+    {%block title %} Add product {% endblock %} 
+    {% block styles %}
+    <link rel="stylesheet" href="{% static '/src/css/page/addProduct.css' %}" />
+    {% endblock%} 
+    {% block scripts %}
+     <script>
+    const editProductBaseUrl = "{% url 'edit_product' 0 %}";
+    </script>
+    <script
+    type="module"
+    src=" {% static 'src/js/controller/productController.js' %}"
+    defer
+    ></script>
+
+    {% endblock %}
+    <!-- <script type="module" src="src/js/controller/salesController.js"></script> -->
+
+    {% block content %}
+    <section class="content px-5 overflow-y-scroll box-border h-9/10 mb-10">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="my-4 mx-3 flex items-center justify-between relative search__container">
+        <div>
+            <label class="block text-sm font-medium mb-1">Search Product</label>
+            <div
+            class="inputText flex items-center rounded-md px-3 py-2 shrink-0 w-80"
+            >
+            <i data-lucide="search" class="w-5 h-5 text-gray-500"></i>
+            <input
+                type="text"
+                placeholder="Search product name / scan barcode"
+                class="flex-1 ml-3 outline-none border-none focus:ring-0 search__field"
+            />
+            </div>
+            <ul class="module_inner search_suggest absolute left-0 mt-1 w-90 bg-white rounded-md shadow-md ">
+
+            </ul>
+        </div>
+
+        <div class="AddProduct">
+            <a
+            href="{% url 'add_product' %}"
+            class="px-3 neo-btn neutral py-2 text-bold text-gray-500 rounded-lg"
+            >Discard</a
+            >
+            {% if product_form.instance.pk %}
+            <input type="text" name="product_id" value="{{ product_form.instance.pk }}" class="hidden" id="product_id">
+            <input type="submit" value="update" class="px-3 neo-btn success">
+            {% else %}
+            <input
+            type="submit"
+            name=""
+            id=""
+            value="Save"
+            class="px-3 neo-btn success"
+            />
+            {% endif %}
+        </div>
+        </div>
+        <section class="product-detail flex gap-5 mx-3 mb-6">
+        <section class="first-column flex flex-col gap-6 h-fit basis-3/5">
+            <div
+            class="module_inner product-info bg-white p-6 rounded-lg shadow-md flex-1odlex flex-col gap-2"
+            >
+            <section class="flex-1 flex flex-col">
+                <!-- <div class="mb-4">
+                <label for="product-name" class="block text">Product Information</label>
+                </div>
+                <div class="mb-4">
+                <label for="product-name" class="block text-sm font-medium mb-1"
+                    >Product Name</label
+                >
+                {{ product_form.name|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:product-name" }}
+            </div> -->
+            {% include 'partials/form_field.html' with field=product_form.name attrs="id:product-name" placeholder='placeholder:Product Name' %}
+            {% include 'partials/form_field.html' with field=product_form.barcode attrs="id:sku" placeholder='placeholder:Barcode' %}
+                <div class="mb-4 flex justify-between gap-4">
+                <div class="">
+                    <label for="selling_cost" class="block text-sm font-medium mb-1"
+                    >Retail Price</label
+                    >
+                    {{ pricing_form.retail_price|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:selling_cost" }}
+                </div>
+                
+                <div class="w-1/2">
+                    <label for="category" class="block text-sm font-medium mb-1"
+                    >Category</label
+                    >
+                    {{ product_form.category|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:category"}} 
+                    {% if product_form.category.errors %}
+                    <p class="text-red-500 text-xs italic mt-1">
+                    {{ product_form.category.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+                </div>
+                <div>
+                <label for="description" class="block text-sm font-medium mb-1">Description</label>
+                {{ product_form.description|add_class:"w-full border border-gray-300 rounded-md px-3 py-2"|attr:"id:description"|attr:"rows:4"|attr:"cols:50" }}
+                </div>
+            </section>
+            </div>
+            <div class="module_inner bg-white px-4 py-4 rounded-lg shadow-md product__upload-image">
+            <p class="block text">Product Image</p>
+            <small class="text-gray-500 px-3">Add Product Image</small>
+            {% if product_form.image.errors %}
+            <p class="text-red-500 text-xs italic mt-1 px-3">
+                {{ product_form.image.errors.0 }}
+            </p>
+            {% endif %}
+            <div class="addPicture flex m-4 items-center justify-center">
+                <!-- {{ product_form.image|add_class:"mt-2"|attr:"id:product-image"}} -->
+                <input type="file" 
+                name="{{ product_form.image.html_name }}" 
+                id="product-image" 
+                accept="image/*" 
+                class="hidden">
+                <!-- <input type="file" id="product-image" name="product-image" accept="image/*" class="mt-2 hidden"> -->
+                
+                <label for="product-image" class="cursor-pointer">
+                
+                <div class="inputText image-holder w-100 h-60 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 text-gray-400">
+                {% if product.image %}
+                <div class="imageContainer flex flex-col  rounded-md  w-40">
+                    <figure class="flex justify-center">
+                    <img src="{{ product.image.url }}" alt="Upload" class="w-30 h-30 object-cover mb-2">
+                    </figure>
+                    <div class="text-sm border-gray-300 border-t border-b pt-2 pb-2 font-bold ">
+                        <p>{{ product.image.name }}</p>
+                        <span>{{ product.image.size|filesizeformat }}</span>
+                    </div>
+                    <button class="hover:text-red-400 remove-image">remove Image</button>
+                </div>
+                {% else %}
+                    <div class="flex flex-col justify-center items-center">
+                    <p>click to upload image</p>
+                    <i data-lucide="image-plus" class="w-10 h-10"></i>
+                    </div>
+                {% endif %}
+
+                    <!-- <div class="imageContainer flex flex-col  rounded-md  w-40">
+                                                <figure class="flex justify-center">
+                                                <img src="assets/images/avatar7.png" alt="Upload" class="w-25 h-25 object-cover mb-2">
+                                                </figure>
+                                                <div class="text-sm border-gray-300 border-t border-b pt-2 pb-2 font-bold ">
+                                                    <p>passport.png</p>
+                                                    <span>150kb</span>
+                                                </div>
+                                                <button class="hover:text-red-400">remove Image</button>
+                                            </div> -->
+                </div>
+                </label>
+                
+            </div>
+            </div>
+            <div class="module_inner px-4 py-4 rounded-lg shadow-md">
+            <p class="block text">Product State</p>
+            <div class="tab-menu flex gap-6 my-4">
+                <ul class="text-shadow-black text-sm ps__tab-container">
+                {% if product_form.instance.pk %}
+                <li class="tab-link active ps__tab-link--1" data-tab="1">
+                    <button type="button" data-target="inventory-panel">
+                    <i data-lucide="box" class="w-5 h-5"></i>
+                    <span>Batch Restock</span>
+                    </button>
+                </li>
+                <li class="tab-link ps__tab-link--2" data-tab="2">
+                    <button type="button" data-target="inventory-panel">
+                    <i data-lucide="link" class="w-5 h-5"></i>
+                    <span>Attributes</span>
+                    </button>
+                </li>
+                {% else %}
+                <li class="tab-link ps__tab-link--2 active" data-tab="2">
+                    <button type="button" data-target="inventory-panel">
+                    <i data-lucide="link" class="w-5 h-5"></i>
+                    <span>Attributes</span>
+                    </button>
+                </li>
+                {% endif %}
+                <!-- <li class="tab-link ps__tab-link--3" data-tab="3">
+                                <button data-target="inventory-panel">
+                                    <i data-lucide="lock" class="w-5 h-5"></i>
+                                    <span>Advanced</span>
+                                </button>
+                            </li> -->
+                </ul>
+                <section
+                class="module_inner panel1 border-l w-full px-5 flex flex-col gap-3"
+                >
+                <section
+                    class="panel-1 {% if product_form.instance.pk %}panel--active{% endif %} panel__content animate-fadeInLeft delay-200"
+                >
+                    <div class="flex items-center justify-between mb-3">
+                    <label for="product">Add to stock:</label>
+                    
+                    <input type="number" id="Add-quantity" name="add-quantity" class="w-30 border border-gray-300 rounded-md px-3 py-2" value="0">
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                    <label for="inventory-report">Low Inventory Alert:</label>
+                    {{ inventory_form.low_stock_threshold|add_class:"w-30 border border-gray-300 rounded-md px-3 py-2"|attr:"id:inventory-report"}}
+                    <!-- <input type="number" id="inventory-report" name="product-quantity" class="w-30 border border-gray-300 rounded-md px-3 py-2" required> -->
+                    </div>
+                    {% if product.productattribute.is_expiry %}
+                    <div class="flex items-center justify-between mb-3">
+                    <label for="product">Expiration Date</label>
+                    
+                    <input type="date" id="batch-expiry" name="batch-expiry" class="w-30 border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    {% endif %}
+                    {% if product_form.instance.pk %}
+                    <button
+                    class="neo-add addCategory px-4 py-2 rounded-md gap-1.5 text-white items-center shrink confirm__addstock"
+                    type="button"
+                    >
+                    Restock
+                    </button>
+                    <div class="flex flex-col gap-2 text-gray-400 m-2 text-sm additional-info">
+                    <p>Product in stock now: {{ product.inventory.quantity }}</p>
+                    <p>Last time restocked: {{ product.inventory.last_restocked|date:"d M Y" }}</p>
+                    <p>Total stock over lifetime: {{ product.inventory.total_stock_lifetime }}</p>
+                    </div>
+                    {% endif %}
+                </section>
+                <section
+                    class="panel-2 panel__content animate-fadeInLeft delay-200 {% if not product_form.instance.pk %}panel--active{% endif %}"
+                >
+                    <p class="text-gray-500">Attributes</p>
+                    <div class="">
+                    {{ attribute_form.fragile|attr:"id:fragile" }}
+                    <!-- <input type="checkbox" id="fragile" name="" class="" > -->
+                    <label for="fragile">Fragile</label>
+                    {% if attribute_form.fragile.errors %}
+                    <p class="text-red-500 text-xs italic mt-1">
+                        {{ attribute_form.fragile.errors.0 }}
+                    </p>
+                    {% endif %}
+                    </div>
+                    <div class="">
+                    {{ attribute_form.biodegradable |attr:"id:biodegradable" }}
+                    <!-- <input type="checkbox" id="" name="" class="" > -->
+                    <label for="biodegradable">Biodegradable</label>
+                    {% if attribute_form.biodegradable.errors %}
+                    <p class="text-red-500 text-xs italic mt-1">
+                        {{ attribute_form.biodegradable.errors.0 }}
+                    </p>
+                    {% endif %}
+                    </div>
+                    <div class="">
+                    {{ attribute_form.is_expiry|attr:"id:expired" }}
+                    <div class="exp flex flex-col gap-0.5">
+                        <label for="date" class="self-start">Expiration Date</label>
+                        
+                        <input type="Date" id="expiry" name="expiry_date" class="w-40 border border-gray-300 rounded-md px-3 py-2 hidden animate-fadeInUp" required>
+                    </div>
+                    </div>
+                </section>
+                </section>
+            </div>
+            </div>
+        </section>
+
+        <section class="flex flex-col gap-6 h-fit basis-2/5">
+            {% if product_stats %}
+                            <div
+            class="module_inner product_profit grid grid-cols-4 bg-white p-6 rounded-lg shadow-md gap-3 text-sm text-gray-500"
+            >
+            <div>
+                <p>Today</p>
+                <p class="color font-bold {% if product_stats.today < product_stats.yesterday %} text-red-700{%else%}text-green-700{%endif%} ">₦{{ product_stats.today|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>this week</p>
+                <p class="color font-bold" style="color: green">₦{{ product_stats.this_week|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>this mnth</p>
+                <p class="color" style="color: green">₦{{ product_stats.this_month|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>this yr</p>
+                <p class="color" style="color: green">₦{{ product_stats.this_year|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>yesterday</p>
+                <p class="color" style="color: green">₦{{ product_stats.yesterday|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>lst week</p>
+                <p class="color" style="color: green">₦{{ product_stats.last_week|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>lst mnth</p>
+                <p class="color" style="color: green">₦{{ product_stats.last_month|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p>lst yr</p>
+                <p class="color" style="color: green">₦{{ product_stats.last_year|floatformat:2 }}</p>
+            </div>
+            </div>
+            {% else %}
+            <div
+            class="module_inner product_profit grid grid-cols-4 bg-white p-6 rounded-lg shadow-md gap-3 text-sm text-gray-500"
+            >
+            <div>
+                <p>Today</p>
+                <p class="color font-bold" >N/A</p>
+            </div>
+            <div>
+                <p>this week</p>
+                <p class="color font-bold" >N/A</p>
+            </div>
+            <div>
+                <p>this mnth</p>
+                <p class="color" >N/A</p>
+            </div>
+            <div>
+                <p>this yr</p>
+                <p class="color" >N/A</p>
+            </div>
+            <div>
+                <p>yesterday</p>
+                <p class="color" >N/A</p>
+            </div>
+            <div>
+                <p>lst week</p>
+                <p class="color" >N/A</p>
+            </div>
+            <div>
+                <p>lst mnth</p>
+                <p class="color" >N/A</p>
+            </div>
+            <div>
+                <p>lst yr</p>
+                <p class="color" >N/A</p>
+            </div>
+            </div>
+            {% endif %}
+
+            <div class="module_inner product_profit product_profit_margin p-4 rounded-lg shadow-md gap-4"
+            >
+            <section class="flex justify-between items-center">
+                <p class="font-medium">Inventory</p>
+                <div class="flex items-center gap-1">
+                <span class="text-sm">Package Mode:</span>
+                <div class="relative top-0.5">
+                    {{ pricing_form.is_pack|add_class:"peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full transition-colors duration-200 checked:bg-blue-500"|attr:"id:is_pack" }}
+                    <!-- <input type="checkbox" name="" id="is_pack" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full   transition-colors duration-200 checked:bg-indigo-500"> -->
+                    <label
+                    for="is_pack"
+                    class="absolute top-2.5 left-2 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5 peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"
+                    ></label>
+                </div>
+                </div>
+            </section>
+
+            
+                <div class="package-details hidden flex-col gap-4 animate-fadeInDown">
+                    <p class="text-sm text-gray-500 font-medium border-b pb-1">Package Setup</p>
+                    <!-- selling Price -->
+                    {% include 'partials/form_field.html' with field=pricing_form.case_selling_price attrs="id:case_price" placeholder='placeholder:Enter Package Selling Price' %}
+                    <!-- Cost + Count -->
+                    <div class="grid grid-cols-2 gap-4">
+                        {% include 'partials/form_field.html' with field=pricing_form.case_cost attrs="id:case_cost" placeholder='placeholder: Enter Case Cost'%}
+                        
+                        {% include 'partials/form_field.html' with field=pricing_form.case_count attrs="id:case_count" placeholder='placeholder: Enter Case Count'%}
+                    </div>
+                    <!-- Pack Size + Damage -->
+                    <div class="grid grid-cols-2 gap-4">
+                        {% include 'partials/form_field.html' with field=pricing_form.pack_size attrs="id:pack_size" placeholder='placeholder: Pack Size'%}
+
+                        <div>
+                            <label class="block text-sm mb-1">Damaged pieces</label>
+                            <input type="number" id="damaged_piece" name="damaged_piece" value="" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                            {{pricing_form.damaged_units|add_class:"opacity-0 absolute"|attr:"id:damaged_master"}} 
+                        {% if pricing_form.damaged_units.errors %}
+                        <p class="text-red-500 text-xs italic mt-1">
+                        {{ pricing_form.damaged_units.errors.0 }}
+                        </p>
+                        {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Retail Details -->
+                <div class="retail-details flex flex-col gap-4 animate-fadeInDown">
+                    <p class="text-sm text-gray-500 font-medium border-b pb-1">Retail Setup</p>
+                    {% include 'partials/form_field.html' with field=pricing_form.cost attrs="id:cost" placeholder='placeholder:Enter Product Cost' %}
+
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        {% include 'partials/form_field.html' with field=inventory_form.quantity attrs="id:Qty" placeholder='placeholder: Qty'%}
+
+                        <div>
+                            <label class="block text-sm mb-1">Damaged Unit</label>
+                            <input
+                        type="number"
+                        id="damaged_unit"
+                        name="damaged_unit"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2"
+                        value="0"
+                    />
+                        </div>
+                    </div>
+                </div>
+                <!-- Calculations -->
+                <div class="border-t pt-3 flex flex-col gap-3 mt-2">
+                    <p class="text-sm text-gray-500 font-medium pt-2">Auto Calculations</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="">
+                        <label for="count" class="block text-sm font-medium mb-1">Gross projection(N)</label>
+                        <input type="text" id="gross_proj" placeholder="Gross Projection"
+                        class="w-full border rounded-md px-3 py-2 bg-gray-100" disabled />
+                        </div>
+                        <div class="">
+                        <label for="category" class="block text-sm font-medium mb-1">Markup Margin(%)</label>
+                        <input type="text" id="markup_mar" placeholder="Markup %"
+                        class="w-full border rounded-md px-3 py-2 bg-gray-100" disabled />
+                        </div>
+                        
+                    </div>
+                    <div class="mb-4">
+                    <label for="item-id" class="block text-sm font-medium mb-1"
+                    >Gross Margin(%)</label
+                    >
+                    <input
+                    type="text"
+                    id="gross_margin"
+                    name="gross_margin"
+                    placeholder="Gross Margin %"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2"
+                    disabled
+                    
+                    />
+                </div>
+
+                </div>
+                
+            
+            </div>
+            {% if product_form.non_field_errors %}
+            <div class="text-red-500 text-sm mt-4 p-3 bg-red-100 rounded-md mb-2">
+            {{ product_form.non_field_errors }}
+            </div>
+            {% endif %} {% if pricing_form.non_field_errors %}
+            <div class="text-red-500 text-sm mt-4 p-3 bg-red-100 rounded-md mb-2">
+            {{ pricing_form.non_field_errors }}
+            </div>
+            {% endif %} {% if inventory_form.non_field_errors %}
+            <div class="text-red-500 text-sm mt-4 p-3 bg-red-100 rounded-md mb-2">
+            {{ inventory_form.non_field_errors }}
+            </div>
+            {% endif %} {% if attribute_form.non_field_errors %}
+            <div class="text-red-500 text-sm mt-4 p-3 bg-red-100 rounded-md mb-2">
+            {{ attribute_form.non_field_errors }}
+            </div>
+            {% endif %}
+        </section>
+        </section>
+
+        {% endblock %}
+    </form>
+    </section>

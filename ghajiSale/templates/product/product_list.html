@@ -1,0 +1,472 @@
+{% extends 'partials/base.html' %}
+{% load currency_filters %}
+{% load static %}
+{% block title %} Product List {% endblock %}
+    <!-- <script type="module" src="src/js/controller/salesController.js"></script> -->
+    {% block styles %}
+    <link rel="stylesheet" href="{% static '/src/css/page/addProduct.css' %}">
+    {% endblock%}
+    {% block scripts %}
+<script type="module" src=" {% static 'src/js/controller/productListController.js' %}" defer></script>
+
+{% endblock %}
+{% block pageName %} Product List {%endblock%}
+{% block content %}
+    <section class="content px-5 py-7 overflow-y-scroll box-border h-9/10 mb-8">
+                    <section class="store_summary module_inner mb-8 bg-white rounded-md px-3 py-5 justify-between flex shadow-md/50 shadow-gray-400">
+                        <div class="flex text-gray-500 gap-6 border-r border-gray-300 px-6">
+                            <div class="flex flex-col gap-2">
+                            <p>Store Sale</p>
+                            <h2 class="text-2xl font-semibold text-black ">{{ total_sales|currency }}</h2>
+                            <p>{{ monthly_sales|currency }} this month</p>
+                            </div>
+                            <div class="avater bg-indigo-100  rounded-md w-12 h-12 flex items-center justify-center grow-0 shrink-0">
+                                <i data-lucide="store" class="w-8 h-8"></i>
+                            </div>
+                        </div>
+                        <div class="flex text-gray-500 gap-6 border-r border-gray-300 px-6">
+                            <!-- <i data-lucide="home" class="w-5 h-5 inline-block text-gray-500"></i> <span class="text-gray-500">/</span> <span class="text-gray-700 font-medium">Category List</span> -->
+                            <div class="flex flex-col gap-2">
+                            <p>Transaction</p>
+                            <h2 class="text-2xl font-semibold text-black ">{{ total_transactions }}</h2>
+                            <p>{{ total_transactions }} this month</p>
+                            </div>
+                            <div class="avater bg-indigo-100  rounded-md w-12 h-12 flex items-center justify-center ">
+                                <i data-lucide="arrow-right-left"></i>
+                            </div>
+                        </div>
+                        <div class="flex text-gray-500 gap-6 border-r border-gray-300 px-6 ">
+                            <!-- <i data-lucide="home" class="w-5 h-5 inline-block text-gray-500"></i> <span class="text-gray-500">/</span> <span class="text-gray-700 font-medium">Category List</span> -->
+                            <div class="flex flex-col gap-2">
+                            <p>Total Stock</p>
+                            <h2 class="text-2xl font-semibold text-black ">{{ total_stock }}</h2>
+                            <p>Current Total stock</p>
+                            </div>
+                            <div class="avater bg-indigo-100  rounded-md w-12 h-12 flex items-center justify-center grow-0 shrink-0">
+                                <i data-lucide="shopping-basket" class="w-8 h-8"></i>
+                            </div>
+                        </div>
+                        <div class="flex text-gray-500 gap-6 0 px-6 ">
+                            <!-- <i data-lucide="home" class="w-5 h-5 inline-block text-gray-500"></i> <span class="text-gray-500">/</span> <span class="text-gray-700 font-medium">Category List</span> -->
+                            <div class="flex flex-col gap-2">
+                            <p>Overall Stock</p>
+                            <h2 class="text-2xl font-semibold text-black ">{{ total_products }}</h2>
+                            <p>{{ total_products }} products</p>
+                            </div>
+                            <div class="avater bg-indigo-100  rounded-md w-12 h-12 flex items-center justify-center grow-0 shrink-0">
+                                <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="tableContainer product_container rounded-lg shadow-md/50 shadow-gray-400  py-3 ">
+                    <section class="filter px-6 py-6 border-b border-gray-300 mb-5">
+
+                    <button class="neo-add addCategory flex px-4 py-2 rounded-md gap-1.5 text-white items-center mb-4 shrink float-right" data-modal="add-category">
+                    <i data-lucide="plus" class="w-5 h-5 "></i>
+                    <span>Add item</span>
+                    </button>
+<form method="GET">
+
+    <!-- Category -->
+    <div class="flex w-full">
+    <div class="w-1/2 border-r border-gray-300 px-4 py-4">
+        <label>Category</label>
+        <select name="category" class="inputText w-full border border-gray-300 rounded-md px-3 py-2">
+            <option value="">All</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}"
+            {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+            {{ category.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Status -->
+    <div class="w-1/2 px-4 py-4">
+        <label>Status</label>
+        <select name="status" class="inputText w-full border border-gray-300 rounded-md px-3 py-2">
+            <option value="">All</option>
+            <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if request.GET.status == "inactive" %}selected{% endif %}>Inactive</option>
+        </select>
+    </div>
+</div>
+    <!-- Search -->
+ <div class="w-full flex items-end justify-between px-4 py-4 gap-4">
+
+    <!-- Search -->
+    <div class="flex-1">
+        <label class="block mb-1">Search</label>
+        <div class="inputText flex items-center rounded-md p-2.5 w-120">
+            <i data-lucide="search" class="w-5 h-5 text-gray-500"></i>
+            <input 
+                type="text"
+                placeholder="Search product..."
+                name="q"
+                class="flex-1 ml-3 outline-none border-none focus:ring-0">
+        </div>
+    </div>
+
+    <!-- Button -->
+<button 
+    type="submit" 
+    class="neo-btn success applyFilter">
+    Apply
+</button>
+
+
+</div>
+
+
+
+</form>
+
+
+                    </section>
+
+
+                    </header>
+                    <div class="filter-container p-1 text-xs font-medium neu-inset w-fit float-right mb-4 mr-0 ">
+                        <button class="filter-btn active">all</button>
+                        <button class="filter-btn">out</button>
+                        <button class="filter-btn">critical</button>
+                        <button class="filter-btn">low</button>
+                        <button class="filter-btn">healthy</button>
+                    </div>
+                    <section class="table product__list mt-6">
+                        <table class="product_table w-full table-auto border-collapse ">
+                            <thead class="fields">
+                                <tr class="text-xm font-medium">
+                                    <th class="border"><div><p>Product</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                    <th class=""><p>Action</p></th>
+                                    <th class=""><p>Stock</p></th>
+                                    <th>On hand</th>
+                                    <th>ReOrder at</th>
+                                    <th>Turnover<br>(30d)</th>
+                                    <th class=""><div><p>Total Earning</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="attribute">
+                            {% for product in page_obj %}
+                                <tr class="hover:bg-gray-50 ">
+                                    <td class="px-4 py-4 border-b border-gray-200">
+                                        <div class="avater-wrapper flex items-center gap-2">
+                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md overflow-hidden w-13 h-13 flex items-center justify-center  font-semibold ">
+                                                <img src="{{ product.image.url }}" alt="" srcset="" class="w-12 h-12">
+                                            </div>
+                                            <div class="text-left">
+                                                <p class="font-medium capitalize ">{{ product.name }}</p>
+                                                <p class="font-mono text-xs muted-foreground">· {{ product.category.name }}</p>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                    <td class="px-4 border-b  border-gray-200 text-center action">
+                                        <button class="button add edit" data-modal="edit-product" data-id="{{ product.id }}">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="button add negative trash">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="trash" class="w-5 h-5"></i>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        
+                                    </td>
+                                    <td class="px-4 border-b border-gray-200 text-center">
+                                        <div class="relative w-11 h-5 inline-block">
+                                            <input type="checkbox" {% if product.is_active %}checked{%endif%} name="" id="switch-component-1" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <label for="switch-component-1" class="absolute top-0.5 left-0.5 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
+                                            
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 border-gray-200 border ">
+                                        <div class="stock-wrapper ">
+                                            <div class="stock-bar">
+                                                <div class="stock-fill {{product.stock_status}}" style="width: {{product.stock_fill}}%;"></div>
+                                            </div>
+
+                                            <span class="stock-count">{{ product.inventory.quantity }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-center text-sm ">{{ product.inventory.low_stock_threshold }}</td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-center text-sm">{{ product.turnover_rate|floatformat:2 }}</td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">₦{{ product.total_profit|floatformat:2 }}</td>
+                                    <td class="">
+                                        <div class="flex justify-center items-center">
+                                            <span class="neu-pill status-badge status-{{product.stock_status}} font-bold">
+                                                <span class="status-dot"></span>
+
+                                                {% if product.stock_status == 'out' %}
+                                                    Out Of stock
+                                                {% else %}
+                                                    {{ product.stock_status }}
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!-- <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border-b border-gray-200 ">
+                                        <div class="avater-wrapper flex items-center gap">
+                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md w-13 h-13 flex items-center justify-center  font-semibold grow-0 shrink-0">
+                                                <img src="./assets/images/product-23.png" alt="" srcset="" class="w-13 h-13">
+                                            </div>
+                                            <div class="text-left">
+                                                <p class="font-medium ">Electronics</p>
+                                                <p class="text-sm text-gray-500">Choose from wide range of beauty & personal care from popular brands</p>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                    <td class="px-4 border-b  border-gray-200 text-center action">
+                                        <button class="button add edit" data-modal="edit-product">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="button add negative trash">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="trash" class="w-5 h-5"></i>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        
+                                    </td>
+                                    
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right">1500</td>
+                                    <td class="px-4 border-b border-gray-200 text-center">
+                                        <div class="relative w-11 h-5 inline-block">
+                                            <input type="checkbox" name="" id="switch-component-2" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <label for="switch-component-2" class="absolute top-0.5 left-0.5 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
+                                            
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right">N500</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border-b border-gray-200">
+                                        <div class="avater-wrapper flex items-center gap">
+                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md w-13 h-13 flex items-center justify-center  font-semibold grow-0 shrink-0">
+                                                <img src="./assets/images/product-25.png" alt="" srcset="" class="w-13 h-13">
+                                            </div>
+                                            <div class="text-left">
+                                                <p class="font-medium ">Groceries</p>
+                                                <p class="text-sm text-gray-500">Choose from wide range of beauty & personal care from popular brands</p>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                    <td class="px-4 border-b  border-gray-200 text-center action">
+                                        <button class="button add edit" data-modal="edit-product">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="button add negative trash">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="trash" class="w-5 h-5"></i>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right">1999</td>
+                                    <td class="px-4 border-b border-gray-200 text-center">
+                                        <div class="relative w-11 h-5 inline-block">
+                                            <input type="checkbox" name="" id="switch-component-3" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <label for="switch-component-3" class="absolute top-0.5 left-0.5 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
+                                            
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">N309</td>
+                                    
+                                    
+                                    
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border-b border-gray-200">
+                                        <div class="avater-wrapper flex items-center gap">
+                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md w-13 h-13 flex items-center justify-center  font-semibold grow-0 shrink-0">
+                                                <img src="./assets/images/product-24.png" alt="" srcset="" class="w-13 h-13">
+                                            </div>
+                                            <div class="text-left">
+                                                <p class="font-medium ">Beverages</p>
+                                                <p class="text-sm text-gray-500">Choose from wide range of beauty & personal care from popular brands</p>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                    <td class="px-4 border-b  border-gray-200 text-center action">
+                                        <button class="button add edit" data-modal="edit-product">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="square-pen" class="w-5 h-5"></i>
+                                                
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="button add negative trash">
+                                            <div class="button-outer">
+                                                <div class="button-inner">
+                                                <i data-lucide="trash" class="w-5 h-5"></i>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right">1999</td>
+                                    <td class="px-4 border-b border-gray-200 text-center">
+                                        <div class="relative w-11 h-5 inline-block">
+                                            <input type="checkbox" name="" id="switch-component-4" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <label for="switch-component-4" class="absolute top-0.5 left-0.5 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
+                                            
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">N309</td>
+                                    
+                                </tr> -->
+                                
+                                <!-- More rows as needed -->
+                            </tbody>
+                        </table>
+                        <section class="px-4 py-4">
+                            {% include "partials/pagination.html" %}
+
+
+                        </section>
+
+                    
+                    </section>
+
+                    </section>
+                </section>
+                <div class="modal-overlay hidden"></div>
+                            <div class="modal rounded-lg shadow-lg p-6 bg-white w-96 hidden .animate-fadeInUp delay-200" data-modal="add-category">
+                                <div class="model-header">
+                                <h2 class="text-xl font-semibold mb-4">Add New Category</h2>
+                                <button class="close close-modal"><i data-lucide="x"></i></button>
+                                </div>
+                                <div class="model-body">
+                                <form>
+                                    <div class="mb-4">
+                                        <label for="category-name" class="block text-sm font-medium mb-1">Category Name</label>
+                                        <input type="text" id="category-name" class="inputText w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="image" class="block text-sm font-medium mb-1">Category Image</label>
+                                        <input type="file" id="image" class="inputText w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="description" class="block text-sm font-medium mb-1">Description</label>
+                                        <textarea id="description" class="inputText w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required></textarea>
+                                    </div>
+                                    <div class="flex justify-end gap-3">
+                                        <button type="button" class="neo-btn neutral modal-close px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-gray-800">Cancel</button>
+                                        <button type="submit" class="neo-btn success px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white">Add Category</button>
+                                    </div>
+                                </form>
+                                </div>
+                            </div>
+
+                            <div class="modal modal-detail hidden content .animate-fadeInUp delay-200" data-modal="edit-product">
+                                <div class="model-header  ">
+                                <h2 class="text-xl font-semibold">Detail of Smart Phone</h2>
+                                    <button class="close close-modal"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                </div>
+                                <section class="model-body " >
+                                    <div class="modalContent">
+                                    <div class="flex gap-1.5 w-full  ">
+                                    <figure class="w-50">
+                                        <img src="./assets/images/product-23.png" alt="" srcset="" class="w-32 h-32">
+                                    </figure>
+                                    <ul>
+                                        <li>
+                                            <p>Product:</p><span> Basket</span>
+                                        </li>
+                                        <li>
+                                            <p>Category:</p><span>groceries</span>
+                                        </li>
+                                        <li>
+                                            <p>Price:</p><span>$1000</span>
+                                        </li>
+                                        <li>
+                                            <p>qty</p><input type="number" value="200">
+                                        </li>
+                                        <li class="status">
+                                            <p>status:</p>
+                                            <div class="relative w-13 h-5 inline-block">
+                                            <input type="checkbox" name="" id="switch-component-5" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <label for="switch-component-5" class="absolute top-0.5 left-0 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    </div>
+                                    <div class="totalEarning flex justify-between items-center mt-4 border-t pt-4">
+                                            <p class="font-bold text-xl">Total Earning:</p>
+                                            <div class=" font-medium text-xl text-green-600">$5000</div>
+                                    </div>
+                                    <!-- <ul>
+                                        <li>
+                                            <p>Product:</p>
+                                            <div>
+                                                <img src="" alt="" srcset="">
+                                                <div>
+                                                    <input type="text" value="Iphone">
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <p>Category:</p>
+                                            <div>
+                                                <img src="" alt="" srcset="">
+                                                <span>shoes</span>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <p>Price:</p>
+                                            <div>$<input type="text" value="1000"></div>
+
+                                        </li>
+                                        <li>
+                                            <p>qty:</p>
+                                            <div><input type="text" value="200"></div>
+                                        </li>
+                                        <li class="status">
+                                            <p>status:</p>
+                                            <div>
+                                                <button>
+                                                    inactive
+                                                </button>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <p>Total Earning:</p>
+                                            <div>$<input type="text" value="5000"></div>
+                                        </li>
+                                    </ul> -->
+                                    <div class="modalActions flex justify-end gap-3 mt-4">
+                                        <button class=" cancelChanges neo-btn neutral neo-actions px-3">cancel</button>
+                                        <button class="px-3 saveChanges neo-btn success neo-actions">Save Changes</button>
+                                    </div>
+                                    </div>
+                                </section>
+                            </div>
+{% endblock %}

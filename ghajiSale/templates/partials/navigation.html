@@ -1,0 +1,83 @@
+    <aside id="aside" class="sideBar w-350 shrink-0">
+
+                <div id="logo" class="px-6 py-4.5 text-xl font-semibold text-white border-b ">
+                    <p id="logo-lg" class="text-center text-black"><span >Ghaji-Stores</span><span class="text-blue-700">.</span></p>
+                    <p id="logo-sm" class="hidden"><span class="text-center text-black">GStores</span><span class=" text-blue-700">.</span></p>
+                </div>
+
+                <nav class="navigation default-scrollbar flex-1 overflow-x-hidden pt-8 space-y-2 px-3 py-5">
+
+                    <p class="category ">P.O.S</p>
+                    <ul class=" px-3">
+                        <li class="{% if active_page == 'Sales Monitor' %} active {% endif %}">
+                            <a href="{% url 'sale_page' %}">
+                            <i data-lucide="layout-dashboard" class="icon w-5 h-5 shrink-0"></i>
+                            <p>Main</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <p class="category">Reports</p>
+                    <ul class="px-3">
+                        {% if show_reports %}
+                        <li class="{% if active_page == 'Staff Report' %} active {% endif %}">
+                            <a href="{% url 'staff_report_page' %}">
+                            <i data-lucide="chart-pie"></i>
+                            <p>Daily Report</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if show_monthly_report %}
+                        <li class="{% if active_page == 'Monthly Report' %} active {% endif %}">
+                            <a href="{% url 'monthly_report_page' %}">
+                            <i data-lucide="file-chart-pie"></i>
+                            <p>Monthly Report</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    {% if show_product_management %}
+                    <p class="category">Inventory</p>
+
+                    <button id="menu-btn" class="accordion {% if active_page in 'Product List,Add Product,Categories' %}active{% endif %}">
+                        Products
+                        <span class="arrow"><i data-lucide="chevron-up"></i></span>
+                    </button>
+
+
+                    <ul class="panel px-3">
+                        <li class="{% if active_page == 'Product List' %} active {% endif %}">
+                            <a href="{% url 'products' %}">
+                            <i data-lucide="package" class="w-5 h-5 shrink-0"></i>
+                            <span>Product List</span>
+                            </a>
+                        </li>
+                        <li class="{% if active_page == 'Add Product' %} active {% endif %}">
+                            <a href="{% url 'add_product' %}">
+                            <i data-lucide="plus-circle" class="w-5 h-5 shrink-0"></i>
+                            <p>Add Product</p>
+                            </a>
+                        </li>
+                        <li class="{% if active_page == 'Categories' %} active {% endif %}">
+                            <a href="{% url 'categories' %}">
+                            <i data-lucide="funnel-plus"></i>
+                            <p>Category List</p>
+                            </a>
+                        </li>
+                        <li class="">
+                            <a href="{% url 'inventory_report' %}">
+                            <i data-lucide="alert-triangle"></i>
+                            <p>Inventory Report</p>
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                </nav>
+
+                <div class="logout px-6 py-4 ">
+                    <i data-lucide="log-out" class="w-5 h-5"></i> 
+                    <span>Logout</span>
+                </div>
+            </aside>

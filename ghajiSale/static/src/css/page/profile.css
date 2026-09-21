@@ -1,0 +1,33 @@
+/* profile details */
+.user-profile{
+    background-color:  rgb(231, 234, 240);
+    border-radius: 8px;
+    /* box-shadow: -10px -10px 16px #ffffffaa,
+            6px 6px 13px rgba(44, 100, 230, 0.159); */
+    box-shadow: inset 4px 4px 4px #ffffff, 
+    inset -4px -4px 5px rgb(214, 217, 222),
+    -10px -10px 16px #d5d5d527,
+        6px 6px 13px rgba(44, 100, 230, 0.159)
+    ;
+    color: #4d4d4d;
+    font-size: 14px;
+    padding: 15px 40px;
+    transition: all 0.2s ease-in-out;
+    }
+    /* .user-profile:hover{
+    box-shadow: inset 4px 4px 10px #ffffff, inset -4px -4px 10px #bcbcbc;
+    color: #000000;
+    transform: translateY(-5px);
+    } */
+    .user-profile > div{
+        background-color: rgb(231, 234, 240);
+    border-radius: 50px;
+    /* box-shadow: inset 4px 4px 10px #bcbcbc, inset -4px -4px 10px #ffffff; */
+    box-shadow: inset 4px 4px 10px rgb(214, 217, 222), inset -4px -4px 10px #ffffff;
+
+    color: #4d4d4d;
+    cursor: pointer;
+    padding: 15px 40px;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid rgba(128, 128, 128, 0.115);
+    }

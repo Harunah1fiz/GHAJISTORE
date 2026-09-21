@@ -1,0 +1,237 @@
+.sideBar{
+    width: 16rem;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: width 200ms ease-in-out;
+}
+/* things that change on sidebar active */
+
+.sideBar.active{
+    width: 8%;
+    overflow: hidden;
+    padding: 0;
+    justify-content: center;
+    border-radius: 15px;
+    border-right: 1px solid var(--color-gray-300);
+    box-shadow: 2px 0px 20px var(--dark);
+    
+    
+}
+.sideBar.active li p{
+    display: none;
+}
+.sideBar.active li{
+    width: fit-content;
+    justify-items: center;
+    margin-left: 8px;
+}
+
+.sideBar.active .navigation{
+    padding: 4px;
+    /* text-align: center; */
+    transform: scale(.95);
+    transition: all .2s ease;
+    
+}
+.sideBar.active ul li span,.sideBar.active .logout span{
+    display: none;
+    animation: fadeInLeft 0.3s ease-in-out forwards;
+    transform: translateX(-20px);
+    white-space: nowrap;
+    text-align: center;        
+}
+.sideBar.active svg.lucide{
+    justify-self: center;
+    margin-left: 0 50%;
+    
+}
+.sideBar.active p{
+    text-align: center;
+    margin: auto;
+}
+.sideBar.active #logo{
+    border-bottom: 1px solid var(--color-gray-300);
+    padding: 15px;
+
+}
+.sideBar.active .logout{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.accordion{
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    justify-content: space-between;
+    cursor: pointer;
+    border-radius: 0.75rem;
+    box-shadow: none;
+    background-color: transparent;
+    transition: all 0.2s ease-in-out;
+    box-shadow:
+    0.15em 0.15em 0.3em var(--dark),
+    -0.15em -0.15em 0.3em var(--light);
+}
+.accordion:hover, .accordion.active{
+    background-color: var(--defaultbtn);
+    color: white;
+    font-weight: 400;
+    box-shadow:
+    0.35em 0.35em 0.7em var(--dark),
+    -0.35em -0.35em 0.7em var(--light);
+}
+
+/* nav link categories */
+.category{
+    padding-left: 1rem;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+/* logout */
+.logout{
+    border-top: 1px solid var(--color-gray-300);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    cursor: pointer;
+    color: var(--iconColor);
+    transition: all 0.2s ease-in-out;
+}
+.logout:hover{
+    color: rgb(220, 38, 38);
+}
+.notification-badge{
+    position: absolute;
+    top: -5px;
+    right: -5px;
+}
+.hidden{
+    display: none;
+}
+
+.arrow{
+    transform: rotate(90deg);
+    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+/* profile menu layout */
+.user-menu{
+    background-color: var(--bg-color);
+    z-index: 20;
+    color: #4d4d4d;
+    padding: 15px;
+    box-shadow: inset 4px 4px 4px #ffffff, 
+                inset -4px -4px 5px rgb(214, 217, 222),
+                -10px -10px 16px var(--dark),
+                6px 6px 13px var(--light   );
+}
+/* profile image */
+.imageContainer{
+    padding: 6px;
+    border-radius: 50%;
+    box-shadow: inset 8px 8px 10px #b2b2b2,
+                inset -4px -4px 10px #ffffff;
+}
+.profile-image{
+    border-radius: 148px;
+background: linear-gradient(145deg, #e6e6e6, #ffffff);
+box-shadow:  inset 9px 18px #d6d6d6,
+            inset -9px 18px #ffffff;
+}
+
+
+/* neumorphic table */
+.table{
+    border: 1px solid var(--color-gray-300);
+    padding: 10px;
+    width: 100%;
+    border-radius: 10px;
+    background-color:  rgb(231, 234, 240);
+    box-shadow:
+        0.25em 0.25em 0.9em var(--dark),
+        -0.35em -0.35em 0.5em var(--light);
+    
+}
+        /* table neumorphic fields */
+
+.fields th{
+    background-color: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    margin:20px;
+    padding-left: 4px;
+    border-bottom: 1px solid var(--color-gray-300);
+}
+
+.fields th > div{
+    border-left: #cbced1;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #4B5563; 
+    padding-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.25rem;
+    align-items: center;
+    padding-top: 10px;
+    position: relative;
+
+
+}
+.fields th > div:hover{
+    cursor: pointer;
+    color: var(--defaultbtn);
+}
+.avater{
+    background-color: rgb(231, 234, 240);
+    border: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--defaultbtn);
+}
+/* table neumorphic body */
+tbody tr{
+    background-color: rgb(231, 234, 240);
+    transition: all 0.2s ease-in-out;
+    margin-top: 10px;
+    
+}
+tbody td{
+    padding: 12px 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-gray-300);
+}
+tbody td:first-child{
+    padding-left: 4px;
+}
+tbody tr:hover{
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    box-shadow: inset 0.25em 0.25em 0.7em var(--dark),
+    inset -0.35em -0.35em 0.7em var(--light);
+}
+/* action button styling */
+.action button.trash svg.lucide{
+    color: rgba(255, 0, 0, 0.7);
+    
+}
+.action button.edit svg.lucide{
+    color: rgba(20, 71, 230, 0.7);
+}
+.action button.trash:hover svg.lucide{
+    opacity: 1;
+    color: red;
+}
+.action button.edit:hover svg.lucide{
+    color: rgb(20, 71, 230);
+}

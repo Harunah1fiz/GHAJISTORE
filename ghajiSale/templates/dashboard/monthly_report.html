@@ -1,0 +1,880 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %} Monthly report {% endblock %}
+
+    <!-- <script type="module" src="src/js/controller/salesController.js"></script> -->
+    {% block styles %}
+    <link rel="stylesheet" href="{% static '/src/css/page/sale.css' %}">
+    <link rel="stylesheet" href="{% static '/src/css/page/inventoryReport.css' %}">
+    <link rel="stylesheet" href="{% static '/src/css/page/addProduct.css' %}">
+    <link rel="stylesheet" href="{% static '/src/css/page/monthly_report.css' %}">
+    
+    {% endblock%}
+  {% block scripts %}
+  <script type="module" src="{% static '/src/js/controller/MonthlyReportController.js' %}"></script>
+  <!-- <script type="module" src="{% static '/src/js/utils/chart.js' %}"></script> -->
+  {% endblock %}
+    {% block pageName %} Monthly report {%endblock%}
+{% block content %}
+    <section class="report-view content overflow-y-scroll border p-5 h-9/10 mb-8 grow">
+        
+        <header class="flex justify-between gap-3 sm:flex-row sm:items-end">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Welcome back</p>
+                                <h1 class="font-display text-3xl font-bold tracking-tight md:text-4xl">Monthly Business Report</h1>
+                            </div>
+                            <div class="glass inline-flex items-center gap-2 self-start rounded-full px-4 py-2 text-sm font-semibold sm:self-auto ">
+                                
+                                <input type="month" name="month" id="month" class="neu-card p-4 focus:outline-none" >
+                            </div>
+        </header>
+        
+        <div class="flex justify-between items-center mt-3 mb-6 gap-6 ">
+<div class="neu-card report-card flex-2">
+
+    <div class="report-header">
+
+        <div class="report-title">
+            <div class="icon-box">
+                <i class="fa-solid fa-chart-column"></i>
+            </div>
+
+            <div>
+                <h3>Revenue Performance</h3>
+                <p>This week vs last week</p>
+            </div>
+        </div>
+
+        <div class="growth">
+            <span class="growth-value">↑ 24.8%</span>
+            <small>Compared to last week</small>
+        </div>
+
+    </div>
+
+
+    <div class="report-summary">
+
+        <div>
+            <small>This Week</small>
+            <h2>₦2,450,000</h2>
+        </div>
+
+        <div>
+            <small>Last Week</small>
+            <h4>₦1,960,000</h4>
+        </div>
+
+    </div>
+
+
+    <div class="chart-container">
+
+        <!-- Chart.js Canvas -->
+
+        <canvas id="weeklyRevenueChart"></canvas>
+
+    </div>
+    </div>
+    <div class="stats-column grid grid-cols-2 gap-4 flex-1 monthly-summary">
+
+        <div class="mini-stat relative overflow-hidden">
+
+          <div class="mini-stat-header flex items-center gap-4 mb-1">
+            <div class="mini-icon ">
+              <i data-lucide="banknote-arrow-up" class="w-8 h-8"></i>
+            </div>
+            <p>Sales</p>
+          </div>
+            
+
+            <div class="mini-content">
+                
+                <h3 class="success">₦2.45M</h3>
+                <p>+14.6% vs last month</p>
+            </div>
+        </div>
+
+
+        <div class="mini-stat relative overflow-hidden">
+            <div class="absolute border -top-10 -right-10 w-28 h-28 rounded-full opacity-25 blur-3xl bg-red-500 pointer-events-none"></div>
+
+          <div class="mini-stat-header flex items-center gap-4 mb-1">
+            <div class="mini-icon">
+              <i data-lucide="trending-up" class="w-8 h-8"></i>
+            </div>
+            <p>Net Profit</p>
+          </div>
+            
+
+            <div class="mini-content">
+                <h3 class="success">₦850K</h3>
+                <p>35% margin</p>
+            </div>
+        </div>
+
+
+        <div class="mini-stat relative overflow-hidden">
+            <!-- <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-25 blur-3xl bg-red- pointer-events-none"></div> -->
+            <div class="absolute border -top-10 -right-10 w-28 h-28 rounded-full opacity-25 blur-3xl bg-red-500 pointer-events-none"></div>
+
+            <div class="mini-stat-header flex items-center gap-4 mb-1">
+            <div class="mini-icon">
+              <i data-lucide="banknote-arrow-down" class="w-8 h-8"></i>
+            </div>
+            <p>Expenses</p>
+          </div>
+
+            <div class="mini-content">
+                <h3 class="expenses text-red-700">₦1.60M</h3>
+                <p>Under budget</p>
+            </div>
+        </div>
+        
+
+
+          <div class="mini-stat relative overflow-hidden">
+
+            <div class="mini-stat-header flex items-center gap-4 mb-1">
+            <div class="mini-icon">
+              <i data-lucide="banknote-arrow-down" class="w-8 h-8"></i>
+            </div>
+            <p>Inventory Value</p>
+          </div>
+
+            <div class="mini-content">
+                <h3 class="expenses">₦1.60M</h3>
+                <p>Healthy Stock level</p>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+<section class="flex mt-6 gap-4 mb-6">
+<div class="neu-card monthly-earnings basis-[70%] animate-rise flex flex-col p-6 ">
+
+    <div class="earnings-header">
+
+        <div class="earnings-title">
+
+            <div class="neu-inset p-3 ">
+                <i data-lucide="chart-bar" class="w-7 h-7 text-blue-700"></i>
+            </div>
+
+            <div>
+                <h3>Monthly Earnings Analytics</h3>
+                <p>Net profit · last 12 months</p>
+            </div>
+
+        </div>
+
+
+        <div class="earnings-actions">
+
+            <div class="earnings-total">
+
+                <small>Total Earnings</small>
+
+                <div class="earnings-amount flex">
+                    <h2 class="font-bold text-4xl bg-clip-text text-transparent bg-linear-to-r from-green-300 to-green-700">₦8.4M</h2>
+                    
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="chart-container">
+        <canvas id="earningsChart"></canvas>
+    </div>
+
+</div>
+<div class="neu-card animate-rise flex flex-col p-6 flex-1 ">
+    <h3 class="text-lg font-bold">vs Last Year</h3>
+    <p class="mb-5 text-sm text-muted-foreground">this month compared to a year ago</p>
+        <div class="grid flex-1 grid-cols-1 gap-4">
+            <div class="neu-inset flex flex-col justify-center p-4">
+            <p class="text-md text-muted-foreground">Last Year</p>
+            <p class="mt-1 font-display text-3xl font-bold text-muted-foreground last-yr">$3000</p>
+            </div>
+            <div class="neu-inset flex flex-col justify-center p-4">
+            <p class="text-md text-muted-foreground">This Year</p>
+            <p class="mt-1 font-display text-3xl font-bold this-yr">$4000</p>
+            </div>
+        </div>
+        <div class="growth-summary">
+
+    <div class="growth-left">
+
+        <span class="growth-percent">
+            +24.8%
+        </span>
+
+    </div>
+
+    <span class="growth-amount">
+        +₦450,000
+    </span>
+
+</div>
+    </div>
+</section>
+<section class="neu-card-inset story-section mb-6 animate-rise p-6">
+
+    <div class="story-header">
+
+        <div class="story-icon neu-inset">
+          <i data-lucide="album" class="w-7 h-7 text-blue-700"></i>
+        </div>
+
+        <div>
+            <h2>Your Month at a Glance</h2>
+            <p>A simple summary of how your store performed</p>
+        </div>
+
+    </div>
+
+
+    <div class="story-grid">
+
+        <div class="story-card success">
+            
+            <p>Sales improved by 18% this month — your strongest month this quarter.</p>
+        </div>
+
+        <div class="story-card warning">
+            
+            <p>Expenses rose 9%, mainly from larger supplier purchases.</p>
+        </div>
+
+        <div class="story-card info">
+            
+            <p>Beverages generated the highest revenue across all categories.</p>
+        </div>
+
+        <div class="story-card success">
+            
+            <p>Net profit was 25% stronger than last month.</p>
+        </div>
+
+        <div class="story-card danger">
+            
+            <p>Frozen foods underperformed and may need a promotion.</p>
+        </div>
+
+    </div>
+
+</section>
+<section class="mb-6 flex gap-4">
+ <div class="neu-card chart-card">
+
+    <div class="chart-header">
+
+        <div>
+            
+            <h3>Revenue vs Expenses</h3>
+            <p>Last 12 months</p>
+        </div>
+        <div class="business-status positive">
+
+    Business is healthy. Profit increased by ₦450,000 this month.
+</div>
+
+        <!-- <div class="legend">
+
+            <span>
+                <i class="revenue"></i>
+                Revenue
+            </span>
+
+            <span>
+                <i class="expense"></i>
+                Expenses
+            </span>
+
+            <span>
+                <i class="profit"></i>
+                Profit
+            </span>
+
+        </div> -->
+
+    </div>
+
+    <canvas id="revenueChart"></canvas>
+
+</div> 
+<div class="neu-card expense-card flex-1">
+
+    <h3>Expense Breakdown</h3>
+
+    <div class="donut-wrapper">
+
+    <canvas id="expenseChart" class="w-6 h-12"></canvas>
+
+    <!-- <div class="donut-total">
+        <small>Total</small>
+        <h2>₦1.8M</h2>
+    </div> -->
+
+</div>
+
+    <ul class="expense-list" style="list-style-type: square;" >
+
+        <li class="success">
+            <span>Employee Salaries</span>
+            <strong>₦450,000</strong>
+        </li>
+
+        <li>
+            <span>Suppliers</span>
+            <strong>₦1,200,000</strong>
+        </li>
+
+        <li>
+            <span>Electricity</span>
+            <strong>₦85,000</strong>
+        </li>
+
+    </ul>
+
+</div>
+</section>
+<section class="mb-5 flex gap-4 flex-1">
+<div class="neu-card p-6 relative overflow-hidden">
+
+  <!-- glow background -->
+
+
+  <!-- header -->
+  <div class="relative flex items-center gap-3 mb-5">
+    <div class="w-10 h-10 rounded-2xl bg-purple-500 grid place-items-center shadow-lg">
+      🛍️
+    </div>
+
+    <div>
+      <h3 class="font-semibold tracking-tight">Quick Metrics</h3>
+      <p class="text-[11px] text-gray-400">Operational KPIs</p>
+    </div>
+  </div>
+
+  <!-- metrics -->
+  <div id="metrics" class="space-y-3"></div>
+</div>
+<div class="neu-card p-6 flex-1 relative overflow-hidden">
+  <div class="mb-4 flex items-start justify-between">
+    <div>
+      <h3 class="font-semibold tracking-tight">Peak Sales Hours</h3>
+      <p class="text-xs text-gray-400 mt-0.5">Transactions per hour today</p>
+    </div>
+
+    <div class="text-right">
+      <div class="text-xs text-gray-400">Peak</div>
+      <div class="text-sm font-semibold peak-time">6:00 PM</div>
+    </div>
+  </div>
+
+  <div class="border h-[400px]">
+    <canvas id="peakChart"></canvas>
+  </div>
+</div>
+<div class="neu-card rounded-3xl p-6 xl:col-span-2">
+
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-purple-500 grid place-items-center">
+          👥
+        </div>
+        <div>
+          <h3 class="font-semibold tracking-tight">Top Employees</h3>
+          <p class="text-[11px] text-gray-400">Performance this month</p>
+        </div>
+      </div>
+
+      <button class="text-xs text-purple-400 hover:underline">
+        All staff
+      </button>
+    </div>
+
+    <div class="space-y-3">
+
+      <!-- EMPLOYEE 1 -->
+      <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+        <div class="w-10 h-10 rounded-xl bg-purple-600 grid place-items-center text-xs font-bold">
+          SC
+        </div>
+
+        <div class="flex-1">
+          <div class="text-sm font-medium">Sarah Chen</div>
+          <div class="text-[11px] text-gray-400">Cashier</div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-sm font-semibold">$18,420</div>
+          <div class="text-[10px] text-green-400">96% score</div>
+        </div>
+      </div>
+
+      <!-- EMPLOYEE 2 -->
+      <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+        <div class="w-10 h-10 rounded-xl bg-green-600 grid place-items-center text-xs font-bold">
+          MK
+        </div>
+
+        <div class="flex-1">
+          <div class="text-sm font-medium">Marcus Kim</div>
+          <div class="text-[11px] text-gray-400">Floor Lead</div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-sm font-semibold">$16,210</div>
+          <div class="text-[10px] text-green-400">91% score</div>
+        </div>
+      </div>
+
+      <!-- EMPLOYEE 3 -->
+      <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+        <div class="w-10 h-10 rounded-xl bg-yellow-500 grid place-items-center text-xs font-bold">
+          PP
+        </div>
+
+        <div class="flex-1">
+          <div class="text-sm font-medium">Priya Patel</div>
+          <div class="text-[11px] text-gray-400">Stocker</div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-sm font-semibold">$14,820</div>
+          <div class="text-[10px] text-green-400">87% score</div>
+        </div>
+      </div>
+
+      <!-- EMPLOYEE 4 -->
+      <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+        <div class="w-10 h-10 rounded-xl bg-purple-500 grid place-items-center text-xs font-bold">
+          DR
+        </div>
+
+        <div class="flex-1">
+          <div class="text-sm font-medium">Diego Ruiz</div>
+          <div class="text-[11px] text-gray-400">Cashier</div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-sm font-semibold">$13,110</div>
+          <div class="text-[10px] text-green-400">82% score</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+<section class=" mb-5">
+    <div class="neu-card rounded-3xl p-6">
+  <div class="mb-5">
+    <h3 class="font-semibold tracking-tight">Category Performance</h3>
+    <p class="text-xs text-gray-400 mt-0.5">
+      Revenue, profit & growth by department
+    </p>
+  </div>
+
+  <div id="category-performance" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+
+    <!-- CARD 1 -->
+    <div class="neu-inset p-4">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/5 grid place-items-center text-xl">🥤</div>
+          <div>
+            <div class="font-semibold text-sm">Beverages</div>
+            <div class="text-[11px] text-gray-400">120 SKUs</div>
+          </div>
+        </div>
+        <div class="text-xs text-green-400 font-semibold">+12%</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase">Revenue</div>
+          <div class="font-bold">$45.0k</div>
+        </div>
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase">Profit</div>
+          <div class="font-bold text-green-400">$21.0k</div>
+        </div>
+      </div>
+
+      <div class="h-12 mt-3">
+        <canvas id="c1"></canvas>
+      </div>
+    </div>
+
+    <!-- CARD 2 -->
+    <div class="neu-inset p-4">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/5 grid place-items-center text-xl">🍿</div>
+          <div>
+            <div class="font-semibold text-sm">Snacks</div>
+            <div class="text-[11px] text-gray-400">80 SKUs</div>
+          </div>
+        </div>
+        <div class="text-xs text-red-400 font-semibold">-4%</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase">Revenue</div>
+          <div class="font-bold">$32.0k</div>
+        </div>
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase">Profit</div>
+          <div class="font-bold text-green-400">$14.0k</div>
+        </div>
+      </div>
+
+      <div class="h-12 mt-3">
+        <canvas id="c2"></canvas>
+      </div>
+    </div>
+
+    <!-- CARD 3 -->
+    <div class="neu-inset p-4">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/5 grid place-items-center text-xl">🧊</div>
+          <div>
+            <div class="font-semibold text-sm">Frozen Foods</div>
+            <div class="text-[11px] text-gray-400">60 SKUs</div>
+          </div>
+        </div>
+        <div class="text-xs text-green-400 font-semibold">+6%</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase">Revenue</div>
+          <div class="font-bold">$28.0k</div>
+        </div>
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase">Profit</div>
+          <div class="font-bold text-green-400">$12.0k</div>
+        </div>
+      </div>
+
+      <div class="h-12 mt-3">
+        <canvas id="c3"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+<section class="flex gap-4 xl:flex-row mb-6">
+
+  <!-- TARGETS CARD -->
+  <div class="neu-card rounded-3xl p-6 xl:col-span-2 flex-1">
+    <div class="flex items-center gap-2 mb-5">
+      <div class="w-8 h-8 rounded-xl bg-green-500 grid place-items-center">
+        🎯
+      </div>
+      <div>
+        <h3 class="font-semibold tracking-tight">Sales Targets</h3>
+        <p class="text-[11px] text-gray-400">Current quarter progress</p>
+      </div>
+    </div>
+
+    <div id="sales-targets" class="space-y-5">
+
+      <!-- ITEM 1 -->
+      <div>
+        <div class="flex justify-between mb-2">
+          <span class="text-xs text-gray-400">Monthly Sales</span>
+          <span class="text-xs font-semibold">89%</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full bg-purple-500 w-[89%] rounded-full"></div>
+        </div>
+      </div>
+
+      <!-- ITEM 2 -->
+      <div>
+        <div class="flex justify-between mb-2">
+          <span class="text-xs text-gray-400">Quarterly Profit</span>
+          <span class="text-xs font-semibold">72%</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full bg-green-500 w-[72%] rounded-full"></div>
+        </div>
+      </div>
+
+      <!-- ITEM 3 -->
+      <div>
+        <div class="flex justify-between mb-2">
+          <span class="text-xs text-gray-400">New Customers</span>
+          <span class="text-xs font-semibold">64%</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full bg-blue-500 w-[64%] rounded-full"></div>
+        </div>
+      </div>
+
+      <!-- ITEM 4 -->
+      <div>
+        <div class="flex justify-between mb-2">
+          <span class="text-xs text-gray-400">Inventory Turnover</span>
+          <span class="text-xs font-semibold">92%</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full bg-pink-500 w-[92%] rounded-full"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- performing product -->
+      <div class="neu-card p-6">
+
+  <!-- HEADER -->
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+    <div>
+      <h3 class="font-semibold tracking-tight">Top Performing Products</h3>
+      <p class="text-xs text-gray-400 mt-0.5">
+        Best sellers, profit leaders, fast movers
+      </p>
+    </div>
+
+    <!-- FAKE CONTROLS -->
+    <div class="flex items-center gap-2">
+      <div class="glass rounded-xl flex items-center gap-2 px-3 h-9">
+        🔍
+        <input placeholder="Search…" class="bg-transparent outline-none text-xs w-28" />
+      </div>
+
+      <button class="glass rounded-xl h-9 px-3 text-xs text-gray-400">
+        ⛃ Filter
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-160 h-80">
+
+      <thead>
+        <tr class="text-[11px] uppercase text-gray-400">
+          <th class="text-left pb-3 pl-2">Product</th>
+          <th class="text-right pb-3">Units</th>
+          <th class="text-right pb-3">Revenue</th>
+          <th class="text-right pb-3">Margin</th>
+          <th class="text-right pb-3 pr-2">Stock</th>
+        </tr>
+      </thead>
+
+      <tbody id="top-products-body">
+
+        <!-- ROW -->
+        <tr class="border-t border-white/10 hover:bg-white/5 transition">
+          <td class="py-3 pl-2">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/5 grid place-items-center">
+                🥤
+              </div>
+              <div>
+                <div class="font-medium">Coca Cola 500ml</div>
+                <div class="text-[11px] text-gray-400">SKU-001</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="text-right tabular-nums">2,340</td>
+          <td class="text-right font-medium tabular-nums">$18,420</td>
+
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-2">
+              <div class="w-14 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500 w-[70%]"></div>
+              </div>
+              <span class="text-xs">70%</span>
+            </div>
+          </td>
+
+          <td class="text-right pr-2">
+            <span class="px-2 py-1 text-[11px] rounded-full bg-green-500/20 text-green-400">
+              In Stock
+            </span>
+          </td>
+        </tr>
+
+        <!-- ROW -->
+        <tr class="border-t border-white/10 hover:bg-white/5 transition">
+          <td class="py-3 pl-2">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/5 grid place-items-center">
+                🍫
+              </div>
+              <div>
+                <div class="font-medium">Chocolate Bar</div>
+                <div class="text-[11px] text-gray-400">SKU-002</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="text-right">1,120</td>
+          <td class="text-right font-medium">$9,800</td>
+
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-2">
+              <div class="w-14 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500 w-[55%]"></div>
+              </div>
+              <span class="text-xs">55%</span>
+            </div>
+          </td>
+
+          <td class="text-right pr-2">
+            <span class="px-2 py-1 text-[11px] rounded-full bg-yellow-500/20 text-yellow-400">
+              Low
+            </span>
+          </td>
+        </tr>
+
+        <!-- ROW -->
+        <tr class="border-t border-white/10 hover:bg-white/5 transition">
+          <td class="py-3 pl-2">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/5 grid place-items-center">
+                🧊
+              </div>
+              <div>
+                <div class="font-medium">Ice Cream Tub</div>
+                <div class="text-[11px] text-gray-400">SKU-003</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="text-right">540</td>
+          <td class="text-right font-medium">$6,120</td>
+
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-2">
+              <div class="w-14 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500 w-[40%]"></div>
+              </div>
+              <span class="text-xs">40%</span>
+            </div>
+          </td>
+
+          <td class="text-right pr-2">
+            <span class="px-2 py-1 text-[11px] rounded-full bg-red-500/20 text-red-400">
+              Critical
+            </span>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+</section>
+<section class="flex gap-4 mb-4 ">
+
+<div class="neu-card rounded-3xl p-6 flex-1">
+
+  <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
+    <div>
+      <h3 class="font-semibold tracking-tight">Yearly Business Breakdown</h3>
+      <p class="text-xs text-gray-400 mt-0.5">
+        Revenue, expenses & profit over 5 years
+      </p>
+    </div>
+  </div>
+
+  <div class="h-[260px]">
+    <canvas id="yearChart"></canvas>
+  </div>
+
+  <!-- STATS -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+
+    <div class="neu-sm p-3 rounded-2xl">
+      <div class="text-[10px] text-gray-400 uppercase">Best Month</div>
+      <div class="text-sm font-bold mt-1">December</div>
+      <div class="text-[11px] text-gray-400">+24% vs Nov</div>
+    </div>
+
+    <div class="neu-sm p-3 rounded-2xl">
+      <div class="text-[10px] text-gray-400 uppercase">Worst Month</div>
+      <div class="text-sm font-bold mt-1">February</div>
+      <div class="text-[11px] text-gray-400">-8% vs Jan</div>
+    </div>
+
+    <div class="neu-sm p-3 rounded-2xl">
+      <div class="text-[10px] text-gray-400 uppercase">YoY Growth</div>
+      <div class="text-sm font-bold mt-1">+21.6%</div>
+      <div class="text-[11px] text-gray-400">vs last year</div>
+    </div>
+
+    <div class="neu-sm p-3 rounded-2xl">
+      <div class="text-[10px] text-gray-400 uppercase">5Y CAGR</div>
+      <div class="text-sm font-bold mt-1">+25.4%</div>
+      <div class="text-[11px] text-gray-400">compounded</div>
+    </div>
+
+  </div>
+</div>
+<div class="growth-card neu-card rekative overflow-hidden p-6">
+  <div class="growth-header">
+    <select>
+      <option>2025</option>
+      <option>2024</option>
+    </select>
+  </div>
+
+  <div class="growth-circle">
+    <div class="circle-content">
+      <h2>78%</h2>
+      <span>Growth</span>
+    </div>
+  </div>
+
+  <h3 class="growth-title">62% Company Growth</h3>
+
+  <div class="growth-stats">
+    <div class="stat">
+      <div class="stat-icon revenue">
+        $
+      </div>
+
+      <div>
+        <span>2025</span>
+        <h4>₦4.8M</h4>
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-icon expense">
+        💼
+      </div>
+
+      <div>
+        <span>2024</span>
+        <h4>₦3.1M</h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+</section>
+        
+
+    </section>
+{% endblock %}

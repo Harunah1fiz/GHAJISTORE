@@ -1,0 +1,695 @@
+{% extends 'partials/base.html' %}
+{% load time_filters %}
+{% load currency_filters %}
+{% load static %}
+{% block title %} Product List {% endblock %}
+    <!-- <script type="module" src="src/js/controller/salesController.js"></script> -->
+    {% block styles %}
+    <link rel="stylesheet" href="{% static '/src/css/page/addProduct.css' %}">
+    <link rel="stylesheet" href="{% static '/src/css/page/inventoryReport.css' %}">
+    
+    {% endblock%}
+    {% block scripts %}
+<script type="module" src=" {% static 'src/js/controller/InventoryReportController.js' %}" defer></script>
+
+{% endblock %}
+{% block pageName %} Product List {%endblock%}
+{% block content %}
+    <section class="content px-5 overflow-y-scroll box-border h-9/10 mb-10 inventory__view">
+        {% if messages%}
+        {% for message in messages %}
+        <div class="alert absolute warning right-0 top-0">
+        <i data-lucide="circle-alert"></i>
+        <p>{{ message }}</p>
+        <button class="close"><span>×</span></button>
+        </div>
+    {% endfor %}
+    {% endif%}
+        <h2 className="mt-2 font-display text-4xl font-semibold tracking-tight">
+            Inventory health overview
+        </h2>
+        <section class="grid grid-cols-3 gap-4 mt-5 mb-3">
+            <div class="neu neu-pressable p-5 tone-success">
+                <div class="stat-card-content">
+                    <div class="stat-card-info">
+                        <p class="stat-label">
+                            Total Inventory Value
+                        </p>
+                                <p class="stat-value">{{ inventory_value|currency }}</p>
+                        <p class="stat-hint">{{ total_products }} products tracked</p>
+                    </div>
+                        
+                <div class="stat-icon">
+                    <i data-lucide="banknote"></i>
+                </div>
+                </div>
+
+            </div>
+                    <div class="neu neu-pressable p-5 tone-warning">
+                        <div class="stat-card-content">
+                            <div class="stat-card-info">
+                                <p class="stat-label">
+                                    Below Threshold
+                                </p>
+                                <p class="stat-value">{{ low_stock_count}}</p>
+                                <p class="stat-hint">Require restock action</p>
+                            </div>
+                        
+                        <div class="stat-icon">
+                            <i data-lucide="trending-down"></i>
+                        </div>
+                        </div>
+
+                    </div>
+                    <div class="neu neu-pressable p-5 tone-danger">
+                        <div class="stat-card-content">
+                            <div class="stat-card-info">
+                                <p class="stat-label">
+                                    Out Of Stock
+                                </p>
+                                <p class="stat-value">{{ out_of_stock_count }}</p>
+                                <p class="stat-hint">{{ difference }} more in critical state</p>
+                            </div>
+                        
+                        <div class="stat-icon">
+                            <i data-lucide="package-x"></i>
+                        </div>
+                        </div>
+
+                    </div>
+                    <div class="neu neu-pressable p-5 tone-default">
+                        <div class="stat-card-content">
+                            <div class="stat-card-info">
+                                <p class="stat-label">
+                                    Total Unit in Stock
+                                </p>
+                                <p class="stat-value">{{total_stock}}</p>
+                                <p class="stat-hint">25 Added this month</p>
+                            </div>
+                        
+                        <div class="stat-icon">
+                            <i data-lucide="boxes"></i>
+                        </div>
+                        </div>
+
+                    </div>
+                    <div class="neu neu-pressable p-5 tone-shield">
+                        <div class="stat-card-content">
+                            <div class="stat-card-info">
+                                <p class="stat-label">
+                                    Damaged Units
+                                </p>
+                                <p class="stat-value">{{ damaged_stock_count }}</p>
+                                <p class="stat-hint">Units requiring inspection</p>
+                            </div>
+                        
+                        <div class="stat-icon">
+                            <i data-lucide="shield-alert"></i>
+                        </div>
+                        </div>
+
+                    </div>
+                    <div class="neu neu-pressable p-5 tone-profit">
+                        <div class="stat-card-content">
+                            <!-- <div class="stat-card-info">
+                                <p class="stat-label">
+                                    Monthly Profit
+                                </p>
+                                <p class="stat-value">{{ monthly_sales|floatformat:2 }}</p>
+                                <p class="stat-hint">{{ stock_added_this_month }} Added this month</p>
+                            </div> -->
+                            <div class="stat-card-info">
+                                <p class="stat-label">
+                                    Product in Stock
+                                </p>
+                                <p class="stat-value">{{ total_product_store }}</p>
+                                <p class="stat-hint">{{ stock_added_this_month }} Added this month</p>
+                            </div>
+                        
+                        <div class="stat-icon">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        </div>
+
+                    </div>
+
+        </section>
+        <section class="alert-section neu overflow-hidden mt-4">
+                    <div class="alert-header">
+                        <div class="alert-title-wrapper">
+                            <div class="alert-icon">
+                                <i data-lucide="triangle-alert"></i>
+                            </div>
+                            <div>
+                            <h3 class="alert-title">Critical alerts</h3>
+
+                            <p class="alert-subtitle">
+                            Products requiring immediate attention
+                            </p>
+                            </div>
+                        </div>
+                        <span class="alert-pill neu-pill px-3 py-1.5 text-xs font-semibold">
+                        5 items
+                        </span>
+                        
+                    </div>
+                    <div class="alert-list overflow-y-scroll h-120 scroll-auto scrollbar-thin">
+                        {% for product in critical_products %}
+                        <div class="alert-item capitalize">
+                            <div class="alert-product">
+                                <div class="alert-product-top">
+                                    <p class="alert-product-name">{{ product.product.name }}</p>
+                                </div>
+                                <p class="alert-meta">
+                                <span class="mono">SKU-204</span>
+                                · {{ product.product.category.name }} · 
+                            </p>
+                            </div>
+                            
+                        <div class="alert-stats">
+                            <div>
+                                <p class="alert-stat-label">On hand</p>
+                                <p class="alert-stat-value danger">{{ product.quantity }}</p>
+                            </div>
+
+                            <div>
+                                <p class="alert-stat-label">Reorder at</p>
+                                <p class="alert-stat-value danger">{{ product.low_stock_threshold }}</p>
+                            </div>
+
+                            <div>
+                                <p class="alert-stat-label">Days cover</p>
+                                <p class="alert-stat-value danger">1.5</p>
+                            </div>
+
+                            <button class="reorder-btn">
+                                <a href="{% url 'edit_product' product.product.id %}">Reorder</a>
+                            </button>
+
+                        </div>
+
+                        </div>
+                        {% endfor %}
+                    </div>
+
+
+        </section>
+        
+        <section class="expiry-section mt-6 neu-inset overflow-hidden mb-4">
+                    <div class="neu expiry-card p-4">
+
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-lg font-bold text-red-700">Expiring Soon</h2>
+                <p class="text-xs text-gray-400">
+                    Products needing attention
+                </p>
+            </div>
+
+            <div class="neu-inset px-3 py-1 text-xs font-bold text-red-800">
+                {{ expiring_products|length }} items
+            </div>
+        </div>
+    <div class="alert-list overflow-y-scroll max-h-120">
+    {% for batch in expiring_products %}
+    <div class="alert-item capitalize mt-3 mb-3">
+        <div class="alert-product">
+            <div class="alert-product-top">
+                <p class="alert-product-name font-semibold capitalize">{{ batch.product.name }}</p>
+            </div>
+            <p class="text-xs text-gray-400">
+                {{ batch.remaining_quantity }} units left
+            </p>
+        </div>
+                            
+        <div class="alert-stats">
+            <div>
+                <p class="alert-stat-label">Batch No</p>
+                <p class="alert-stat-value danger">{{ batch.batch_number }}</p>
+            </div>
+
+            <div>
+                <p class="alert-stat-label">Remaining products</p>
+                <p class="alert-stat-value danger">{{ batch.remaining_quantity }}</p>
+            </div>
+
+            <div>
+                <p class="alert-stat-label">Days left</p>
+                <p class="alert-stat-value danger">{{ batch.days_to_expiry }}</p>
+            </div>
+            <form method="POST" action="{% url 'delete_batch' batch.id %}">
+                {% csrf_token %}
+            <button class="reorder-btn clear-btn">
+                clear
+            </button>
+            </form>
+            
+        </div>
+
+    </div>
+    
+
+    {% empty %}
+
+    <div class="neu-inset p-4 text-center text-sm text-gray-400">
+        No expiring products 
+    </div>
+
+    {% endfor %}
+</div>
+</div>
+        </section>
+                <section class="inventory-section mt-6 neu overflow-hidden">
+
+                    <div class="inventory-header">
+                        <div>
+                            <h3 class="inventory-title">High-value inventory</h3>
+                            <p class="inventory-subtitle">Top SKUs ranked by stock value at cost</p>
+                        </div>
+                        <div class="inventory-icon">
+                            $
+                        </div>
+                    </div>
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th class="left">Product</th>
+                                <th class="right">On hand</th>
+                                <th class="right">Unit cost</th>
+                                <th class="right">Stock value</th>
+                                <th class="">% of total</th>
+                                <th class="">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for high_value_product in high_value_inventory %}
+                            <tr class="inventory-table-row">
+                                <td>
+                                    <div class="product-box capitalize">
+                                        <p class="product-name">{{ high_value_product.name }}</p>
+
+                                        <p class="product-meta">
+                                            · {{ high_value_product.category.name }}
+                                        </p>
+                                    </div>
+                                </td>
+                                <td class="right mono">
+                                    {{ high_value_product.inventory.quantity }}
+                                </td>
+
+                                <td class="right mono">
+                                    {{ high_value_product.pricing.retail_price|floatformat:2 }}
+                                </td>
+                                <td class="right value-text">
+                                    {{ high_value_product.stock_value|floatformat:2 }}
+                                </td>
+                                <td class="">
+                                    <div class="percent-wrapper">
+
+                                    <div class="percent-bar">
+                                        <div
+                                        class="percent-fill"
+                                        style="width: {{ high_value_product.value_percent|floatformat:1 }}%;"
+                                        ></div>
+                                    </div>
+
+                                    <span class="percent-text">
+                                        {{ high_value_product.value_percent|floatformat:1 }}%
+                                    </span>
+
+                                    </div>
+                                </td>
+                                <td class="">
+                                    <div class="flex items-center justify-center">
+                                    <span class="neu-pill status-badge status-{{high_value_product.stock_status}} font-bold ">
+                                            <span class="status-dot"></span>
+                                            {{ high_value_product.stock_status|capfirst }}
+                                    </span>
+                                    </div>
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+                            
+                        </tbody>
+                        </table>
+                    </div>
+                </section>
+                <section class="category-section mt-6">
+
+        <div class="category-header mt-5">
+
+            <div>
+
+            <h3 class="category-title">
+                Category coverage & turnover
+            </h3>
+
+            <p class="category-subtitle">
+                Stock value, days of cover, and 30-day turnover by category
+            </p>
+
+            </div>
+
+        </div>
+
+        <div class="grid lg:grid-cols-3 sm:grid-cols-2 mt-4 mb-3 gap-2">
+
+            <!-- card -->
+            {% for category in categories %}
+            <div class="neu neu-pressable p-3 ">
+
+            <div class="category-top">
+
+                <div class="category-left">
+
+                <div class="category-icon">
+                    <i data-lucide="layers-2"></i>
+                </div>
+
+                <h4 class="category-name">
+                    {{ category.name }}
+                </h4>
+
+                </div>
+
+                <span class="low-badge neu-pill px-2 py-0.5 text-xs font-semibold">
+                {{ category.low_stock_count }} low
+                </span>
+
+            </div>
+
+            <!-- stats -->
+
+            <div class="category-stats">
+
+                <div class="category-stat-box">
+                <p class="category-stat-label">
+                    Value
+                </p>
+
+                <p class="category-stat-value">
+                    {{category.stock_value|floatformat:2}}
+                </p>
+                </div>
+
+                <div class="category-stat-box">
+                <p class="category-stat-label">
+                    Cover
+                </p>
+
+                <p class="category-stat-value">
+                    {{ category.days_cover|floatformat:1 }}d
+                </p>
+                </div>
+
+                <div class="category-stat-box">
+                <p class="category-stat-label">
+                    Turn
+                </p>
+
+                <p class="category-stat-value">
+                    {{ category.turnover|floatformat:2 }}×
+                </p>
+                </div>
+
+            </div>
+
+            <!-- footer -->
+
+            <div class="category-footer">
+
+                <div class="category-footer-top">
+                <span>{{ category.total_product }} products</span>
+                <span>{{ category.sold_30days }} sold / 30d</span>
+                </div>
+
+            </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+</section>
+<section class="movement-grid grid grid-cols-3 gap-4 mb-5 mt-10">
+
+    <!-- FAST MOVING -->
+        
+    <div class="movement-card">
+
+        <div class="movement-header">
+
+        <div class="movement-icon success">
+            <i data-lucide="trending-up"></i>
+        </div>
+
+        <div>
+            <h2 class="movement-title">Fast Moving</h2>
+
+            <p class="movement-subtitle">
+            Top performers this month
+            </p>
+        </div>
+
+        </div>
+
+        <div class="fast-list">
+            {% for product in fast_moving %}
+        <div class="fast-item">
+
+            <div class="fast-top">
+
+            <div class="fast-product">
+
+                <div class="fast-emoji">
+                <img src="{{ product.image.url }}" alt="" srcset="" class="rounded-full w-8 h-8 object-cover">
+                </div>
+
+                <div>
+                <p class="fast-name">{{product.name}}</p>
+
+                <p class="fast-meta">
+                    {{product.sold_30days}} units sold
+                </p>
+                </div>
+
+            </div>
+
+            <p class="fast-revenue">
+                {{product.revenue_30days}}
+            </p>
+
+            </div>
+
+            <div class="progress-bar">
+            <div
+                class="progress-fill"
+                style="width: {{product.rev_parcentage}}%;"
+            ></div>
+            </div>
+
+        </div>
+        {%endfor%}
+
+        </div>
+
+    </div>
+
+    <!-- SLOW MOVING -->
+
+    <div class="movement-card mt-4">
+
+        <div class="movement-header">
+
+        <div class="movement-icon warning">
+            <i data-lucide="trending-down"></i>
+        </div>
+
+        <div>
+            <h2 class="movement-title">Slow Moving</h2>
+
+            <p class="movement-subtitle">
+            Consider promotions or clearance
+            </p>
+        </div>
+
+        </div>
+
+        <div class="slow-grid">
+        {% for product in slow_moving%}
+        <div class="slow-card">
+
+            <div class="slow-top">
+
+            <div class="fast-emoji">
+                <img src="{{ product.image.url }}" alt="" srcset="" class="rounded-full w-8 h-8 object-cover">
+            </div>
+
+            <span class="slow-badge">
+                Slow
+            </span>
+
+            </div>
+
+            <p class="slow-name">
+            {{product.name}}
+            </p>
+
+            <div class="slow-meta">
+            <span>{{product.inventory.quantity}} left</span>
+            <span>{{product.sold_30days}}/month</span>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    </div>
+    <div class="neu overflow-y-scroll h-130">
+    <div class="timeline-header sticky top-0 z-10 p-3 overflow-hidden">
+
+        <div class="timeline-main-icon">
+            <i data-lucide="activity"></i>
+            
+        </div>
+
+        <div>
+        <h2 class="timeline-title">
+            Movement Timeline
+        </h2>
+
+        <p class="timeline-subtitle">
+            Recent inventory activity
+        </p>
+        </div>
+
+    </div>
+    <div class="">
+    <div class="timeline-wrapper p-3">
+
+        <div class="timeline-line "></div>
+
+        <!-- item -->
+        {% for movement in timeline %}
+        <div class="timeline-item">
+
+        <div class="timeline-icon success">
+            <i data-lucide="{{ movement.summary.icon }}" class="w-4.5 h-4.5 text-{{movement.summary.color}}-400"></i>
+        </div>
+
+        <div class="timeline-card ">
+
+            <div class="timeline-card-top">
+
+            <p class="timeline-event-title">
+                {{movement.summary.title}}
+            </p>
+
+            <span class="timeline-time">
+                {{movement.timestamp|short_time_ago}}
+            </span>
+
+            </div>
+
+            <p class="timeline-detail">
+            {{movement.summary.summary}}
+            </p>
+
+        </div>
+       
+
+    </div>
+ {% endfor %}
+
+    <!-- item -->
+
+        <div class="timeline-item">
+
+        <div class="timeline-icon info">
+            <i data-lucide="power" class="w-4.5 h-4.5"></i>
+        </div>
+
+        <div class="timeline-card">
+
+            <div class="timeline-card-top">
+
+            <p class="timeline-event-title">
+                Imported Olive Oil marked inactive
+            </p>
+
+            <span class="timeline-time">
+                14m ago
+            </span>
+
+            </div>
+
+            <p class="timeline-detail">
+            Low rotation · Auto rule
+            </p>
+
+        </div>
+
+        </div>
+        <div class="timeline-item">
+
+        <div class="timeline-icon info">
+            <i data-lucide="plus" class="w-4.5 h-4.5"></i>
+        </div>
+
+        <div class="timeline-card">
+
+            <div class="timeline-card-top">
+
+            <p class="timeline-event-title">
+                New product added
+            </p>
+
+            <span class="timeline-time">
+                14m ago
+            </span>
+
+            </div>
+
+            <p class="timeline-detail">
+            Wireless Earbuds Pro · Electronics
+            </p>
+
+        </div>
+
+        </div>
+        <div class="timeline-item">
+
+        <div class="timeline-icon info">
+            <i data-lucide="arrow-down-right" class="w-4.5 h-4.5"></i>
+        </div>
+
+        <div class="timeline-card">
+
+            <div class="timeline-card-top">
+
+            <p class="timeline-event-title">
+                Pepsi Max 330ml sold
+            </p>
+
+            <span class="timeline-time">
+                14m ago
+            </span>
+
+            </div>
+
+            <p class="timeline-detail">
+            -5 units · Register 2
+            </p>
+
+        </div>
+
+        </div>
+        </div>
+        </div>
+
+    </div>
+</div>
+</section>
+    </section>
+{% endblock %}
