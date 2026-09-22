@@ -21,6 +21,9 @@ from sales_monitor.models import Sale, SaleItem
 from product.models import Product, Inventory
 from analytics.views import get_profit_for_queryset
 from .services import report_to_summary, log_activity, create_notification
+from django.db.models import Q
+from accounts.decorators import login_required_json
+
 import json
 
 EXPENSE_CATEGORY_CHOICES = {choice[0] for choice in Expense.CATEGORY_CHOICES}
@@ -131,6 +134,69 @@ def daily_report_data(request):
         },
         'reports': _collect_reports_for_date(selected_date),
     })
+
+
+# ---------------------- Notifications API ----------------------
+@login_required_json
+def notifications_list(request):
+    # Return recent notifications visible to this user (user-specific + system notifications)
+    qs = Notification.objects.filter(Q(user=request.user) | Q(user__isnull=True)).order_by('-created_at')[:50]
+    data = []
+    for n in qs:
+        data.append({
+            'id': n.id,
+            'title': n.title,
+            'message': n.message,
+            'icon': n.icon,
+            'is_read': n.is_read,
+            'created_at': n.created_at.isoformat(),
+        })
+    return JsonResponse({'notifications': data})
+
+
+@login_required_json
+def notification_mark_read(request, notification_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        n = Notification.objects.get(id=notification_id)
+    except Notification.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
+    if n.user is not None and n.user != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    n.is_read = not n.is_read
+    n.save(update_fields=['is_read'])
+    return JsonResponse({'success': True, 'is_read': n.is_read})
+
+
+@login_required_json
+def notification_delete(request, notification_id):
+    if request.method not in ('POST', 'DELETE'):
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        n = Notification.objects.get(id=notification_id)
+    except Notification.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
+    if n.user is not None and n.user != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    n.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required_json
+def notification_mark_all_read(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    Notification.objects.filter(Q(user=request.user) | Q(user__isnull=True)).update(is_read=True)
+    return JsonResponse({'success': True})
+
+
+@login_required_json
+def notification_clear_all(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    Notification.objects.filter(Q(user=request.user) | Q(user__isnull=True)).delete()
+    return JsonResponse({'success': True})
 
 
 def report_list_create(request):

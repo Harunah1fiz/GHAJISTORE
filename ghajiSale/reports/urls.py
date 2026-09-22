@@ -5,6 +5,13 @@ from sales_monitor.views import checkout
 urlpatterns = [
     path('api/daily-report/', views.daily_report_data, name='daily_report_data'),
     
+    # Notifications API
+    path('api/notifications/', views.notifications_list, name='notifications_list'),
+    path('api/notifications/<int:notification_id>/mark-read/', views.notification_mark_read, name='notification_mark_read'),
+    path('api/notifications/<int:notification_id>/delete/', views.notification_delete, name='notification_delete'),
+    path('api/notifications/mark-all-read/', views.notification_mark_all_read, name='notification_mark_all_read'),
+    path('api/notifications/clear-all/', views.notification_clear_all, name='notification_clear_all'),
+
     path('api/reports/', views.report_list_create, name='report_list_create'),
     path('api/reports/expense/', views.create_expense, name='create_expense'),
     path('api/reports/stock/', views.create_stock_adjustment, name='create_stock_adjustment'),
