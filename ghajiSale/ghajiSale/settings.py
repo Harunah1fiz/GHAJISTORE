@@ -30,7 +30,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+
+# CSRF trusted origins (comma separated)
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+
 
 
 # Application definition
@@ -90,14 +94,43 @@ WSGI_APPLICATION = 'ghajiSale.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASE configuration: default to DATABASE_URL, fall back to SQLite for local development
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
-    )
+    'default': dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 }
+
+# If using mysqlclient on platforms that require PyMySQL fallback, one could add:
+# import pymysql
+# pymysql.install_as_MySQLdb()
+
 
 
 # Password validation
+# Ensure SECRET_KEY is set in production
+if not SECRET_KEY and DEBUG is False:
+    raise Exception('SECRET_KEY environment variable must be set in production')
+
+# Security hardening for production
+# Only enable these when DEBUG is False
+if not DEBUG:
+    # Use secure cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Redirect HTTP to HTTPS
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+    # HSTS
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
+    SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'False') == 'True'
+    # X-Frame-Options
+    X_FRAME_OPTIONS = 'DENY'
+    # Content Type sniffing
+    SECURE_BROWSER_XSS_FILTER = True
+    # Don't allow content sniffing
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
+
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [

@@ -513,7 +513,10 @@ export const checkoutTransaction = async function (transaction) {
 
     const res = await fetch("/sales/api/checkout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken(),
+      },
       body: JSON.stringify(transaction),
     });
 

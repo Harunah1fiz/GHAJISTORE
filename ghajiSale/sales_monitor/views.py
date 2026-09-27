@@ -21,6 +21,14 @@ def sale(request):
 
 @csrf_exempt
 def checkout(request):
+    """
+    Checkout endpoint with idempotency and row-level locking for inventory.
+    Expects JSON payload with transactionId, deviceId, createdAt/date, total, received, items[]
+
+    Behavior:
+    - If transactionId is provided and a Sale with that transaction_id already exists, returns success (idempotent).
+    - Uses select_for_update on Inventory rows to avoid race conditions when deducting stock.
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'invalid Method'}, status=405)
 
@@ -30,15 +38,26 @@ def checkout(request):
         if not parsed_date:
             parsed_date = timezone.now()
 
+        transaction_id = data.get('transactionId')
+        # Idempotency: if transaction_id provided and already exists, return success
+        if transaction_id:
+            if Sale.objects.filter(transaction_id=transaction_id).exists():
+                return JsonResponse({'message': 'sale already processed (idempotent)'})
+
         with transaction.atomic():
+            # We'll lock involved inventory rows to prevent concurrent deductions
             sale = Sale.objects.create(
                 total=Decimal(str(data['total'])),
                 received=Decimal(str(data['received'])),
                 date=parsed_date,
                 method=data.get('method', 'cash'),
-                transaction_id=data.get('transactionId'),
+                transaction_id=transaction_id,
                 device_id=data.get('deviceId'),
             )
+
+            # Collect inventory PKs to lock them all at once
+            product_ids = [int(item['id']) for item in data['items']]
+            inventories = {inv.product_id: inv for inv in Product.objects.filter(id__in=product_ids).select_related('product').select_for_update()} 
 
             for item in data['items']:
                 product = Product.objects.get(id=item['id'])
@@ -49,7 +68,7 @@ def checkout(request):
                 if sale_quantity <= 0:
                     raise ValueError(f"Invalid quantity for {product.name}")
 
-                inventory = product.inventory
+                inventory = inventories.get(product.id) or product.inventory
 
                 if inventory.quantity < sale_quantity:
                     raise ValueError(f"Insufficient stock for {product.name}: only {inventory.quantity} left")
@@ -62,6 +81,7 @@ def checkout(request):
                     itemTotal=line_total,
                 )
 
+                # use F expression to avoid race conditions
                 inventory.quantity = F('quantity') - sale_quantity
                 inventory.save(update_fields=['quantity'])
                 inventory.refresh_from_db()
