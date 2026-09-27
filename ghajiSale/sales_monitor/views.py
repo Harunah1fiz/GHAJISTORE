@@ -10,7 +10,7 @@ from django.db.models import F
 from decimal import Decimal
 from .models import Sale, SaleItem
 
-from product.models import Product, StockMovement
+from product.models import Product, StockMovement, Inventory
 from django.utils import timezone
 # Create your views here.
 def sale(request):
@@ -57,7 +57,7 @@ def checkout(request):
 
             # Collect inventory PKs to lock them all at once
             product_ids = [int(item['id']) for item in data['items']]
-            inventories = {inv.product_id: inv for inv in Product.objects.filter(id__in=product_ids).select_related('product').select_for_update()} 
+            inventories = {inv.product_id: inv for inv in Inventory.objects.filter(product_id__in=product_ids).select_for_update()}
 
             for item in data['items']:
                 product = Product.objects.get(id=item['id'])

@@ -5,9 +5,9 @@ django-widget-tweaks==1.5.1
 gunicorn==26.2.0
 pillow==12.1.0
 # psycopg2-binary==2.9.13  # removed for MySQL production; keep if PostgreSQL needed
-mysqlclient==2.1.2  # MySQL driver; requires system libmysqlclient headers
+mysqlclient==2.3.0  # MySQL driver; requires system libmysqlclient headers
 python-dotenv==1.2.3
-python-dotenv==1.2.3
+# psycopg2-binary==2.9.13  # keep commented if Postgres support needed
 sqlparse==0.5.5
 tzdata==2025.3
 whitenoise==6.12.0
