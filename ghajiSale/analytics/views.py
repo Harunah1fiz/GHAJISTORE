@@ -295,7 +295,7 @@ def month_at_a_glance(request):
         else:
             insights.append({
                 'type': 'danger',
-                'text': f'Revenue dropped by {abs(rev_change):.1f}% compared to last month — down from ₦{last_revenue:,.0f} to ₦{revenue:,.0f}.'
+                'text': f'Revenue dropped by {abs(rev_change):.1f}% compared to last month down from ₦{last_revenue:,.0f} to ₦{revenue:,.0f}.'
             })
 
     # 2. Profit vs last month
@@ -314,7 +314,7 @@ def month_at_a_glance(request):
     else:
         insights.append({
             'type': 'info',
-            'text': f'Profit margin this month is {profit_margin:.1f}% — grade: {grade.upper()}.'
+            'text': f'Profit margin this month is {profit_margin:.1f}%  grade: {grade.upper()}.'
         })
 
     # 3. Expenses vs last month
@@ -328,7 +328,7 @@ def month_at_a_glance(request):
         elif exp_change < 0:
             insights.append({
                 'type': 'success',
-                'text': f'Expenses reduced by {abs(exp_change):.1f}% vs last month — good cost control.'
+                'text': f'Expenses reduced by {abs(exp_change):.1f}% vs last month good cost control.'
             })
 
     # 4. Top performing category
@@ -342,7 +342,7 @@ def month_at_a_glance(request):
     if worst_category and worst_category['product__category__name']:
         insights.append({
             'type': 'danger',
-            'text': f'{worst_category["product__category__name"]} had the lowest revenue this month — consider a promotion or stock review.'
+            'text': f'{worst_category["product__category__name"]} had the lowest revenue this month pls consider a promotion or stock review.'
         })
 
     # 6. Sales target progress
@@ -367,7 +367,7 @@ def month_at_a_glance(request):
     if low_stock_count > 0:
         insights.append({
             'type': 'warning',
-            'text': f'{low_stock_count} product{"s are" if low_stock_count > 1 else " is"} running low on stock — reorder soon to avoid lost sales.'
+            'text': f'{low_stock_count} product{"s are" if low_stock_count > 1 else " is"} running low on stock reorder soon to avoid lost sales.'
         })
 
     return JsonResponse({
