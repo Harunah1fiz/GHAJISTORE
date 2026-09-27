@@ -102,6 +102,16 @@ def inventory_report(request):
     damage_stock_summary = products.aggregate(
         total_damaged_stock=Coalesce(Sum('pricing__damaged_units'), 0)
     )
+    damaged_products = (
+        Product.objects.filter(pricing__damaged_units__gt=0)
+        .select_related('category', 'pricing', 'inventory')
+        .order_by('name')
+    )
+    out_of_stock_products = (
+        Inventory.objects.filter(quantity=0)
+        .select_related('product', 'product__category', 'product__pricing')
+        .order_by('product__name')
+    )
     inventory_summary = Inventory.objects.aggregate(
         total_stock=Coalesce(Sum('quantity'), 0),
         total_products=Count('id')
@@ -262,6 +272,8 @@ def inventory_report(request):
         'total_product_store': total_product_store,
 
         'damaged_stock_count': damage_stock_summary['total_damaged_stock'],
+        'damaged_products': damaged_products,
+        'out_of_stock_products': out_of_stock_products,
 
         'inventory_value': inventory_value,
 

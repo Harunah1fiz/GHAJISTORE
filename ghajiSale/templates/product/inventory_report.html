@@ -29,111 +29,68 @@
             Inventory health overview
         </h2>
         <section class="grid grid-cols-3 gap-4 mt-5 mb-3">
-            <div class="neu neu-pressable p-5 tone-success">
+            <div class="neu neu-pressable p-5 tone-success inventory-summary-card" data-summary-type="total-inventory-value" data-summary-title="Total Inventory Value" data-summary-hint="Products tracked in current inventory" data-summary-items='{{ products|length }}'>
                 <div class="stat-card-content">
                     <div class="stat-card-info">
-                        <p class="stat-label">
-                            Total Inventory Value
-                        </p>
-                                <p class="stat-value">{{ inventory_value|currency }}</p>
+                        <p class="stat-label">Total Inventory Value</p>
+                        <p class="stat-value">{{ inventory_value|currency }}</p>
                         <p class="stat-hint">{{ total_products }} products tracked</p>
                     </div>
-                        
-                <div class="stat-icon">
-                    <i data-lucide="banknote"></i>
+                    <div class="stat-icon"><i data-lucide="banknote"></i></div>
                 </div>
-                </div>
-
             </div>
-                    <div class="neu neu-pressable p-5 tone-warning">
-                        <div class="stat-card-content">
-                            <div class="stat-card-info">
-                                <p class="stat-label">
-                                    Below Threshold
-                                </p>
-                                <p class="stat-value">{{ low_stock_count}}</p>
-                                <p class="stat-hint">Require restock action</p>
-                            </div>
-                        
-                        <div class="stat-icon">
-                            <i data-lucide="trending-down"></i>
-                        </div>
-                        </div>
-
+            <div class="neu neu-pressable p-5 tone-warning inventory-summary-card" data-summary-type="below-threshold" data-summary-title="Below Threshold" data-summary-hint="Products requiring restock action" data-summary-items='{{ low_stock_count }}'>
+                <div class="stat-card-content">
+                    <div class="stat-card-info">
+                        <p class="stat-label">Below Threshold</p>
+                        <p class="stat-value">{{ low_stock_count }}</p>
+                        <p class="stat-hint">Require restock action</p>
                     </div>
-                    <div class="neu neu-pressable p-5 tone-danger">
-                        <div class="stat-card-content">
-                            <div class="stat-card-info">
-                                <p class="stat-label">
-                                    Out Of Stock
-                                </p>
-                                <p class="stat-value">{{ out_of_stock_count }}</p>
-                                <p class="stat-hint">{{ difference }} more in critical state</p>
-                            </div>
-                        
-                        <div class="stat-icon">
-                            <i data-lucide="package-x"></i>
-                        </div>
-                        </div>
-
+                    <div class="stat-icon"><i data-lucide="trending-down"></i></div>
+                </div>
+            </div>
+            <div class="neu neu-pressable p-5 tone-danger inventory-summary-card" data-summary-type="out-of-stock" data-summary-title="Out Of Stock" data-summary-hint="Products with zero stock" data-summary-items='{{ out_of_stock_count }}'>
+                <div class="stat-card-content">
+                    <div class="stat-card-info">
+                        <p class="stat-label">Out Of Stock</p>
+                        <p class="stat-value">{{ out_of_stock_count }}</p>
+                        <p class="stat-hint">{{ difference }} more in critical state</p>
                     </div>
-                    <div class="neu neu-pressable p-5 tone-default">
-                        <div class="stat-card-content">
-                            <div class="stat-card-info">
-                                <p class="stat-label">
-                                    Total Unit in Stock
-                                </p>
-                                <p class="stat-value">{{total_stock}}</p>
-                                <p class="stat-hint">25 Added this month</p>
-                            </div>
-                        
-                        <div class="stat-icon">
-                            <i data-lucide="boxes"></i>
-                        </div>
-                        </div>
-
+                    <div class="stat-icon"><i data-lucide="package-x"></i></div>
+                </div>
+            </div>
+            <div class="neu neu-pressable p-5 tone-default inventory-summary-card" data-summary-type="total-stock" data-summary-title="Total Unit in Stock" data-summary-hint="Current inventory units available" data-summary-items='{{ total_stock }}'>
+                <div class="stat-card-content">
+                    <div class="stat-card-info">
+                        <p class="stat-label">Total Unit in Stock</p>
+                        <p class="stat-value">{{ total_stock }}</p>
+                        <p class="stat-hint">25 Added this month</p>
                     </div>
-                    <div class="neu neu-pressable p-5 tone-shield">
-                        <div class="stat-card-content">
-                            <div class="stat-card-info">
-                                <p class="stat-label">
-                                    Damaged Units
-                                </p>
-                                <p class="stat-value">{{ damaged_stock_count }}</p>
-                                <p class="stat-hint">Units requiring inspection</p>
-                            </div>
-                        
-                        <div class="stat-icon">
-                            <i data-lucide="shield-alert"></i>
-                        </div>
-                        </div>
-
+                    <div class="stat-icon"><i data-lucide="boxes"></i></div>
+                </div>
+            </div>
+            <div class="neu neu-pressable p-5 tone-shield inventory-summary-card" data-summary-type="damaged-units" data-summary-title="Damaged Units" data-summary-hint="Units requiring inspection" data-summary-items='{{ damaged_stock_count }}'>
+                <div class="stat-card-content">
+                    <div class="stat-card-info">
+                        <p class="stat-label">Damaged Units</p>
+                        <p class="stat-value">{{ damaged_stock_count }}</p>
+                        <p class="stat-hint">Units requiring inspection</p>
                     </div>
-                    <div class="neu neu-pressable p-5 tone-profit">
-                        <div class="stat-card-content">
-                            <!-- <div class="stat-card-info">
-                                <p class="stat-label">
-                                    Monthly Profit
-                                </p>
-                                <p class="stat-value">{{ monthly_sales|floatformat:2 }}</p>
-                                <p class="stat-hint">{{ stock_added_this_month }} Added this month</p>
-                            </div> -->
-                            <div class="stat-card-info">
-                                <p class="stat-label">
-                                    Product in Stock
-                                </p>
-                                <p class="stat-value">{{ total_product_store }}</p>
-                                <p class="stat-hint">{{ stock_added_this_month }} Added this month</p>
-                            </div>
-                        
-                        <div class="stat-icon">
-                            <i data-lucide="trending-up"></i>
-                        </div>
-                        </div>
-
+                    <div class="stat-icon"><i data-lucide="shield-alert"></i></div>
+                </div>
+            </div>
+            <div class="neu neu-pressable p-5 tone-profit inventory-summary-card" data-summary-type="products-in-stock" data-summary-title="Product in Stock" data-summary-hint="Products currently tracked" data-summary-items='{{ total_product_store }}'>
+                <div class="stat-card-content">
+                    <div class="stat-card-info">
+                        <p class="stat-label">Product in Stock</p>
+                        <p class="stat-value">{{ total_product_store }}</p>
+                        <p class="stat-hint">{{ stock_added_this_month }} Added this month</p>
                     </div>
-
+                    <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+                </div>
+            </div>
         </section>
+        {% if critical_products %}
         <section class="alert-section neu overflow-hidden mt-4">
                     <div class="alert-header">
                         <div class="alert-title-wrapper">
@@ -149,7 +106,7 @@
                             </div>
                         </div>
                         <span class="alert-pill neu-pill px-3 py-1.5 text-xs font-semibold">
-                        5 items
+                        {{ critical_products|length }} items
                         </span>
                         
                     </div>
@@ -165,7 +122,7 @@
                                 · {{ product.product.category.name }} · 
                             </p>
                             </div>
-                            
+                             
                         <div class="alert-stats">
                             <div>
                                 <p class="alert-stat-label">On hand</p>
@@ -194,7 +151,8 @@
 
 
         </section>
-        
+        {% endif %}
+        {% if expiring_products %}
         <section class="expiry-section mt-6 neu-inset overflow-hidden mb-4">
                     <div class="neu expiry-card p-4">
 
@@ -221,7 +179,7 @@
                 {{ batch.remaining_quantity }} units left
             </p>
         </div>
-                            
+                             
         <div class="alert-stats">
             <div>
                 <p class="alert-stat-label">Batch No</p>
@@ -243,22 +201,15 @@
                 clear
             </button>
             </form>
-            
+             
         </div>
 
     </div>
-    
-
-    {% empty %}
-
-    <div class="neu-inset p-4 text-center text-sm text-gray-400">
-        No expiring products 
-    </div>
-
     {% endfor %}
 </div>
 </div>
         </section>
+        {% endif %}
                 <section class="inventory-section mt-6 neu overflow-hidden">
 
                     <div class="inventory-header">

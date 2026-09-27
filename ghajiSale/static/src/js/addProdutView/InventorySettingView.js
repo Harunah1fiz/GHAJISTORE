@@ -76,6 +76,7 @@ class InventoryProjectionView {
       const data = this._getInventoryData();
       if (!this._isComplete(data)) return;
       this._inputs.damagedMaster.required = false;
+      this._inputs.itemQty.required = false
       
       if(!this._isPack){
         
@@ -98,7 +99,7 @@ class InventoryProjectionView {
     this._inputs.markupMar.value = data.markup;
     this._inputs.grossProj.value = data.grossProfit;
     this._inputs.cost.value = data.costPerUnit;
-    // this._inputs.itemQty.value = data.totalUnits
+    this._inputs.itemQty.value = data.totalUnits
 
   }
 

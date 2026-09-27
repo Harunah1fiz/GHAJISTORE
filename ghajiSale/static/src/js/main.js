@@ -19,8 +19,15 @@ const notificationItems = document.querySelector('#notification-items');
 const notificationMeta = document.querySelector('#notification-meta');
 const markAllReadBtn = document.querySelector('#mark-all-read');
 const deleteAllBtn = document.querySelector('#delete-all-notifications');
-
+const messageElement = document?.querySelector('.disappear');
 const getCSRFToken = () => document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+
+if(messageElement){
+    setTimeout(() => {
+        messageElement.classList.add('hidden');
+    }, 3000);
+}
 
 const fetchNotifications = async () => {
     if (!notificationItems) return;

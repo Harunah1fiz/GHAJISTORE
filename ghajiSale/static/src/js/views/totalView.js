@@ -28,11 +28,13 @@ class TotalView extends View {
     addHandlerChangeInput(handler){
         this._parentElement.addEventListener('input', function(e){
             const input = e.target.closest('.amount__recieved')
-
+            const methodInput = document.querySelector('#transaction_method')
             if(!input) return
             console.log(input);
-            handler(+input.value);
-        })
+            console.log(methodInput.value);
+            handler({ received: +input.value, method: methodInput.value });
+        }
+)
 
     }
 

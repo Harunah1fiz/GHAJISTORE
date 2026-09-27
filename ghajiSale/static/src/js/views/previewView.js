@@ -32,73 +32,140 @@ import { formatCurrencysm } from "../helper.js";
 // export default new PreviewView()
 
 class PreviewView {
-  _generateMarkup(product) {
-    
+_generateMarkup(product) {
+
     const initials = product.name.slice(0, 2).toUpperCase();
 
     return `
-        <li class="item-list py-4 cursor-pointer animate-fadeInUp delay-200"
+        <li
+            class="item-list py-4 cursor-pointer animate-fadeInUp delay-200 mb-2"
             data-id="${product.id}"
-            data-barcode="${product.barcode}">
+            data-barcode="${product.barcode}"
+        >
 
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-4">
 
-                <div class="flex items-center">
+                <!-- Product -->
+                <div class="flex items-center min-w-0 flex-1">
 
-                    <div class="avatar bg-white rounded-md w-15 h-15 flex items-center justify-center mr-3 font-semibold shrink-0">
-                        <img src="/media/${product.image}" class="w-15 h-15 object-cover rounded-md">
-
+                    <!-- Image -->
+                    <div class="
+                        avatar
+                        bg-white
+                        rounded-md
+                        w-15 h-15
+                        flex items-center justify-center
+                        mr-3
+                        
+                        shrink-0
+                        overflow-hidden
+                    ">
+                        ${
+                            product.image
+                                ? `
+                                    <img
+                                        src="/media/${product.image}"
+                                        class="w-15 h-15 object-cover rounded-md"
+                                        alt="${product.name}"
+                                    >
+                                  `
+                                : `
+                                    <p class="text-xl text-gray-500">
+                                        ${initials}
+                                    </p>
+                                  `
+                        }
                     </div>
 
-                    <div>
-                        <div class="font-lg font-semibold">
+
+                    <!-- Details -->
+                    <div class="min-w-0">
+
+                        <div class="font-lg font-semibold capitalize truncate">
                             ${product.name}
                         </div>
 
-                        <div class="font-bold">
-                            ${formatCurrencysm(product.price)}
-                        </div>
-
-                        <p class="stock text-sm text-gray-500">
+                        <p class="stock text-sm text-gray-500 mt-1">
                             Stock: ${product.stock}
                         </p>
 
                         ${
-                          product.isPack
-                            ? `<p class="text-xs text-blue-500">
-                                Pack size: ${product.packSize}
-                            </p>`
-                            : ``
+                            product.isPack
+                                ? `
+                                    <p class="text-xs text-blue-500 mt-1">
+                                        1pkg: ${formatCurrencysm(product.casePrice)}
+                                        <span class="text-gray-400 mx-1">|</span>
+                                        
+                                    </p>
+                                  `
+                                : ``
                         }
 
                     </div>
 
                 </div>
 
-                <div class="button-container flex items-center gap-2">
 
-                    <!-- Add Pack -->
-                    ${
-                      product.isPack
-                        ? `<button class="add-pack bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer"
-                            data-pack="${product.packSize}" ${product.stock < product.packSize ? "disabled" : ""}>
-                            +1 PKg
-                        </button>`
-                        : ``
+                <!-- Price + Actions -->
+                <div class="flex flex-col items-end shrink-0">
+
+                    <!-- Price -->
+                    <div class="
+                        text-lg
+                        font-bold
+                        text-blue-700
+                        mb-2
+                    ">
+                        ${formatCurrencysm(product.price)}
+                    </div>
+
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-2">
+
+                        ${
+                        product.isPack
+                            ? `
+                                <button
+                                    class="add-pack bg-green-500 hover:bg-green-600 text-white
+                                            font-semibold text-sm px-3 py-2 rounded-lg
+                                            transition-colors cursor-pointer
+                                            disabled:opacity-50 disabled:cursor-not-allowed"
+                                    data-pack="${product.packSize}"
+                                    ${product.stock < product.packSize ? "disabled" : ""}
+                                >
+                                    +Pkg
+                                </button>
+                              `
+                            : ``
                     }
-                    <!-- Add Single -->
-                    <button class="add-single bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 cursor-pointer "
-                        data-pack="1">
-                        +1
-                    </button>
+
+                        <button
+                            class="
+                                add-single
+                                bg-blue-50
+                                text-blue-700
+                                px-3
+                                py-1
+                                rounded
+                                hover:bg-blue-100
+                                cursor-pointer
+                                
+                            "
+                            data-pack="1"
+                        >
+                            +
+                        </button>
+
+                    </div>
 
                 </div>
 
             </div>
 
         </li>
-        `;
-  }
+    `;
+}
 
   
 }
