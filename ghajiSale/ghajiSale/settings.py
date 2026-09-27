@@ -39,6 +39,10 @@ CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.ge
 
 # Application definition
 
+# Use BigAutoField by default to silence system check warnings in modern Django
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
