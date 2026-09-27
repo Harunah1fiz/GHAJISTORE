@@ -11,29 +11,38 @@ import monthlyDetailsView from '../DashboardView/monthlyDetailsView.js';
 import yearlyView from '../DashboardView/yearlyView.js';
 import * as model from '../monthlyReportModel.js';
 import reportView from '../views/reportView.js';
-lucide.createIcons();
 
-
+const ensureIcons = () => {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+    }
+};
 
 const controlLoadData = async function(){
-    await model.loadDashboard(document.querySelector('#month')?.value || model.state.month)
-    
-    weeklyRevenueView.render(model.state.dashboard.weekly)
-    monthlySummaryView.render(model.state.dashboard.summary)
-    monthlyRevenueView.render(model.state.dashboard.monthly)
-    monthComp.render(model.state.dashboard.profitCmp)
-    monthAtGlanceView.render(model.state.dashboard.glance)
-    expenseVsprofitView.render(model.state.dashboard.revExp)
-    expensesView.render(model.state.dashboard.expenses)
-    quickMetric.render(model.state.dashboard.kpis)
-    peakHoursView.render(model.state.dashboard.peakHours)
-    monthlyDetailsView.renderCategories(model.state.dashboard.categories)
-    monthlyDetailsView.renderProducts(model.state.dashboard.topProducts)
-    monthlyDetailsView.renderTargets(model.state.dashboard.targets)
-    yearlyView.render(model.state.dashboard.yearly?.yearly || [])
+    // Show a quick loading state while data fetches
+    reportView.showLoading();
+    try {
+      await model.loadDashboard(document.querySelector('#month')?.value || model.state.month)
+
+      weeklyRevenueView.render(model.state.dashboard.weekly)
+      monthlySummaryView.render(model.state.dashboard.summary)
+      monthlyRevenueView.render(model.state.dashboard.monthly)
+      monthComp.render(model.state.dashboard.profitCmp)
+      monthAtGlanceView.render(model.state.dashboard.glance)
+      expenseVsprofitView.render(model.state.dashboard.revExp)
+      expensesView.render(model.state.dashboard.expenses)
+      quickMetric.render(model.state.dashboard.kpis)
+      peakHoursView.render(model.state.dashboard.peakHours)
+      monthlyDetailsView.renderCategories(model.state.dashboard.categories)
+      monthlyDetailsView.renderProducts(model.state.dashboard.topProducts)
+      monthlyDetailsView.renderTargets(model.state.dashboard.targets)
+      yearlyView.render(model.state.dashboard.yearly?.yearly || [])
+    } catch (err) {
+      console.error('Error loading monthly dashboard', err);
+    } finally {
+      reportView.hideLoading();
+    }
 }
-
-
 
 function init(){
     const monthInput = document.querySelector('#month');
@@ -44,7 +53,16 @@ function init(){
     document.querySelector('#top-products-search')?.addEventListener('input', async (event) => {
         try { monthlyDetailsView.renderProducts(await model.loadTopProducts(event.target.value)); } catch (error) { console.error(error); }
     });
-    reportView.addHandlerLoadData(controlLoadData)
+    controlLoadData();
 }
 
-init()
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('DOMContentLoaded event fired');
+        ensureIcons();
+        init();
+    }, { once: true });
+} else {
+    ensureIcons();
+    init();
+}

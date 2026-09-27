@@ -18,7 +18,7 @@ export const state = {
   Transaction: {
     total: 0,
     received: 0,
-    method: "cash",
+    method: "",
   },
 };
 
@@ -31,6 +31,9 @@ const barcodeMap = new Map();
 
 // Map a single raw API object to the shape the UI expects
 const createProductObject = function (product) {
+  const unitPrice = Number(product.price ?? 0);
+  const packPrice = Number(product.packPrice ?? product.casePrice ?? 0) || null;
+
   return {
     id: product.id,
     slug: product.slug,
@@ -38,10 +41,11 @@ const createProductObject = function (product) {
     name: product.name,
     image: product.image, // API field is "image"
     caseCount: product.caseCount,
-    casePrice: product.casePrice,
-    price: product.price,
-    packSize: product.packSize,
-    isPack: product.isPack,
+    casePrice: product.casePrice ?? packPrice,
+    packPrice: packPrice,
+    price: unitPrice,
+    packSize: Number(product.packSize ?? product.caseCount ?? 0) || null,
+    isPack: Boolean(product.isPack),
     // stock is not provided by the API — default to a high number
     // so stock checks don't block sales; adjust when your API includes it
     stock: product.stock ?? 9999,
@@ -51,7 +55,7 @@ const createProductObject = function (product) {
 // Re-calculate the basket total and update state
 const calcCartTotal = function () {
   state.Transaction.total = state.cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
+    (sum, item) => sum + Number(item.total || 0),
     0,
   );
 };
@@ -260,6 +264,7 @@ export const loadSearchProducts = function (query) {
 export const addTocart = function (barcode, quantity) {
   // Find product by barcode from cache or search results
   let product;
+  let currentCartQty;
   const barcodeHit = barcodeMap.get(String(barcode));
   if (barcodeHit) {
     console.log("barcode was given");
@@ -269,47 +274,71 @@ export const addTocart = function (barcode, quantity) {
       (item) => String(item.barcode) === String(barcode),
     );
   }
-
+  console.log(product);
   if (!product) throw new Error("Product not found");
-  
+
+  const requestedUnits = Number(quantity);
+  if (!Number.isFinite(requestedUnits) || requestedUnits <= 0) {
+    throw new Error("Invalid quantity");
+  }
+
+  const packSize = Number(product.packSize || 0);
+  const packPrice = Number(product.packPrice ?? product.casePrice ?? 0) || null;
+  const isPackSale = Boolean(
+    product.isPack && packSize > 0 && packPrice && requestedUnits === packSize,
+  );
+
   // STOCK SAFETY: Prevent adding out-of-stock items
   if (product.stock <= 0) throw new Error("Item is out of stock");
-  
-  // STOCK SAFETY: Prevent adding more than available
-  let qty = Number(quantity);
-  if (qty > product.stock) {
+  if (requestedUnits > product.stock) {
     throw new Error(`Only ${product.stock} ${product.name} available`);
   }
 
   const existingItem = state.cart.find(
     (item) => String(item.barcode) === String(barcode),
   );
-  
+
   if (existingItem) {
-    // STOCK SAFETY: Check if increasing quantity exceeds available stock
-    // if (existingItem.qty + qty > product.stock) {
-    //   throw new Error(`Cannot add ${qty}. Only ${product.stock} available.`);
-    // }
-    existingItem.qty += qty;
+    if (isPackSale) {
+      
+      existingItem.packQty = (Number(existingItem.packQty) || 0) + 1;
+      existingItem.quantityUnits = (Number(existingItem.quantityUnits) || 0) + requestedUnits;
+      existingItem.saleMode = existingItem.unitQty > 0 ? "mixed" : "pack";
+      existingItem.unitQty = Number(existingItem.unitQty || 0);
+      existingItem.qty = existingItem.saleMode === "pack" ? existingItem.packQty : existingItem.quantityUnits;
+      
+    } else {
+      console.log('Adding unit sale to existing cart item');
+      existingItem.saleMode = existingItem.packQty > 0 ? "mixed" : "unit";
+      existingItem.unitQty = (Number(existingItem.unitQty) || 0) + requestedUnits;
+      existingItem.quantityUnits = (Number(existingItem.quantityUnits) || 0) + requestedUnits;
+      // existingItem.qty = existingItem.saleMode !== "mixed" ? existingItem.packQty : existingItem.quantityUnits;
+      existingItem.qty = existingItem.quantityUnits
+    }
+    updateCartItemTotal(existingItem);
   } else {
     state.cart.unshift({
       id: product.id,
       barcode: product.barcode,
       name: product.name,
+      // price: isPackSale && packPrice ? Number(packPrice) : +product.price,
       price: +product.price,
-      qty: qty,
-      total: product.price * qty,
-      // PACK PRICING: Store pack metadata for future calculations
-      packSize: product.packSize || null,
-      packPrice: product.packPrice || null,
+      // salePrice: isPackSale && packPrice ? Number(packPrice) : +product.price,
+      salePrice: +product.price,
+      qty: isPackSale ? 1 : requestedUnits,
+      quantityUnits: requestedUnits,
+      total: 0,
+      packSize: packSize || null,
+      packPrice: packPrice,
+      saleMode: isPackSale ? "pack" : "unit",
+      packQty: isPackSale ? 1 : 0,
+      unitQty: isPackSale ? 0 : requestedUnits,
     });
+    state.cart[0].total = calculateCartItemTotal(state.cart[0]);
   }
 
-  // STOCK SAFETY: Deduct from product stock only once
-  product.stock -= qty;
-  
-  // Re-calculate total with pack pricing support
-  updateCartItemTotal(existingItem || state.cart[0]);
+  product.stock -= requestedUnits;
+  console.log(state.cart);
   calcCartTotal();
 };
 
@@ -317,27 +346,40 @@ export const addTocart = function (barcode, quantity) {
  * Update cart item total considering pack pricing
  * @private
  */
-const updateCartItemTotal = (cartItem) => {
-  if (cartItem.packSize && cartItem.packPrice) {
-    // Use pack pricing logic if pack metadata available
-    const pricing = calculatePackPrice(
-      cartItem.qty,
-      cartItem.packSize,
-      cartItem.packPrice,
-      cartItem.price
-    );
-    cartItem.total = pricing.totalPrice;
-  } else {
-    // Standard unit pricing
-    cartItem.total = cartItem.price * cartItem.qty;
+const calculateCartItemTotal = (cartItem) => {
+  const unitPrice = Number(cartItem.salePrice ?? cartItem.price ?? 0);
+  const packSize = Number(cartItem.packSize ?? 0);
+  const packPrice = Number(cartItem.packPrice ?? 0) || null;
+  const qty = Number(cartItem.quantityUnits ?? 0);
+
+  if (packSize > 0 && packPrice && cartItem.saleMode === "pack") {
+    return Number(cartItem.packQty || 0) * packPrice;
   }
+
+  if (packSize > 0 && packPrice && cartItem.saleMode === "mixed") {
+    const packCount = Number(cartItem.packQty || 0);
+    const unitQty = Number(cartItem.unitQty || 0);
+    return (packCount * packPrice) + (unitQty * unitPrice);
+  }
+
+  if (packSize > 0 && packPrice && qty > 0) {
+    const packCount = Math.floor(qty / packSize);
+    const remainingUnits = qty % packSize;
+    return (packCount * packPrice) + (remainingUnits * unitPrice);
+  }
+
+  return qty * unitPrice;
+};
+
+const updateCartItemTotal = (cartItem) => {
+  if (!cartItem) return;
+  cartItem.total = calculateCartItemTotal(cartItem);
 };
 
 // STOCK SAFETY: Increase quantity with validation
 export const increaseQty = function (id) {
   const item = state.cart.find((p) => p.id == id);
   if (!item) return;
-  console.log(state.search.results);
   const product = state.products.find((p) => p.id == id);
   
   if (!product) return;
@@ -345,7 +387,18 @@ export const increaseQty = function (id) {
   // STOCK SAFETY: Prevent quantity increase if out of stock
   if (product.stock <= 0) throw new Error("Item is out of stock");
 
-  item.qty++;
+  console.log(item);
+  if( item.saleMode === "pack"){
+    item.saleMode = 'mixed'
+    item.qty = item.quantityUnits
+    
+    
+  }else{
+    item.qty++;
+  }
+  
+  item.unitQty++;
+  item.quantityUnits++
   product.stock--;
     
   updateCartItemTotal(item);
@@ -393,7 +446,8 @@ export const holdTransaction = function () {
 };
 
 export const transaction = function (input) {
-  state.Transaction.received = input;
+  state.Transaction.received = input.received;
+  state.Transaction.method = input.method;
 };
 
 export const cancelTransaction = function () {
@@ -405,7 +459,7 @@ export const cancelTransaction = function () {
   });
 
   state.cart = [];
-  state.Transaction = { total: 0, received: 0 };
+  state.Transaction = { total: 0, received: 0, method: "cash" };
 };
 
 /**

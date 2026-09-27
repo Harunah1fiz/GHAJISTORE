@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
 from django.db.models import F
+from decimal import Decimal
 from .models import Sale, SaleItem
 
 from product.models import Product, StockMovement
@@ -21,46 +22,56 @@ def sale(request):
 @csrf_exempt
 def checkout(request):
     if request.method != 'POST':
-        return JsonResponse({'error': 'invalid Method'}, status = 405)
-    
+        return JsonResponse({'error': 'invalid Method'}, status=405)
+
     try:
         data = json.loads(request.body)
-        print(f"Received data: {data}")
-
         parsed_date = parse_datetime(data.get('date') or data.get('createdAt'))
-        print(f"Parsed date: {parsed_date}")
         if not parsed_date:
             parsed_date = timezone.now()
 
         with transaction.atomic():
             sale = Sale.objects.create(
-            total = float(data['total']),
-            received = float(data['received']),
-            date = parsed_date,
-            method = data['method']
+                total=Decimal(str(data['total'])),
+                received=Decimal(str(data['received'])),
+                date=parsed_date,
+                method=data.get('method', 'cash'),
+                transaction_id=data.get('transactionId'),
+                device_id=data.get('deviceId'),
             )
-            print(f"{data}")
+
             for item in data['items']:
                 product = Product.objects.get(id=item['id'])
-                SaleItem.objects.create(
-                    sale = sale,
-                    product = product,
-                    quantity = int(item['qty']),
-                    price = float(item['price']),
-                    itemTotal = float(item['total'])
-                )
-                inventory = product.inventory
-                inventory.quantity = F('quantity') - int(item['qty'])
-                inventory.save()
-                inventory.refresh_from_db()
-                StockMovement.objects.create(
-                    product = product,
-                    quantity_change = int(item['qty']),
-                    movement_type = 'sold',
+                sale_quantity = int(item.get('quantityUnits') or item.get('qty') or 0)
+                unit_price = Decimal(str(item.get('price') or 0))
+                line_total = Decimal(str(item.get('total') or 0))
 
-                    
+                if sale_quantity <= 0:
+                    raise ValueError(f"Invalid quantity for {product.name}")
+
+                inventory = product.inventory
+
+                if inventory.quantity < sale_quantity:
+                    raise ValueError(f"Insufficient stock for {product.name}: only {inventory.quantity} left")
+
+                sale_item = SaleItem.objects.create(
+                    sale=sale,
+                    product=product,
+                    quantity=sale_quantity,
+                    price=unit_price,
+                    itemTotal=line_total,
                 )
-                print(f"Updated inventory for {product.name}: {inventory.quantity} remaining")
+
+                inventory.quantity = F('quantity') - sale_quantity
+                inventory.save(update_fields=['quantity'])
+                inventory.refresh_from_db()
+
+                StockMovement.objects.create(
+                    product=product,
+                    quantity_change=-sale_quantity,
+                    movement_type='sold',
+                )
+
         return JsonResponse({'message': 'sale Saved successfully'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)

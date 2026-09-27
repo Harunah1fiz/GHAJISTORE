@@ -16,6 +16,15 @@
   {% endblock %}
     {% block pageName %} Monthly report {%endblock%}
 {% block content %}
+    <style>
+      /* Hide static placeholders until JS populates real data to avoid flash */
+      .report-view > * { opacity: 0; pointer-events: none; }
+      .report-view.js-ready > * { opacity: 1; pointer-events: auto; transition: opacity .18s ease-in; }
+      /* Simple modal for module detail */
+      .module-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 60; }
+      .module-detail-modal.active { display: flex; }
+      .module-detail-modal .modal { background: white; max-width: 820px; width: 95%; border-radius: 12px; padding: 18px; }
+    </style>
     <section class="report-view content overflow-y-scroll border p-5 h-9/10 mb-8 grow">
         
         <header class="flex justify-between gap-3 sm:flex-row sm:items-end">
@@ -877,4 +886,21 @@
         
 
     </section>
+
+    <!-- Module detail modal (populated by MonthlyDetailsView) -->
+    <div id="moduleDetailModal" class="module-detail-modal" aria-hidden="true">
+      <div class="modal p-4">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h3 id="moduleDetailTitle" class="text-lg font-semibold">Details</h3>
+            <p id="moduleDetailSubtitle" class="text-xs text-gray-500">More information</p>
+          </div>
+          <button id="closeModuleDetail" class="text-gray-600" aria-label="Close">✕</button>
+        </div>
+        <div id="moduleDetailBody" class="space-y-3 text-sm text-gray-700">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+    </div>
+
 {% endblock %}

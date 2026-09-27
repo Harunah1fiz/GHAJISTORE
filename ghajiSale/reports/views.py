@@ -103,7 +103,7 @@ def daily_report_data(request):
 
     sales = Sale.objects.filter(date__date=selected_date)
     cash_sales = sales.filter(method='cash').aggregate(total=Sum('total'))['total'] or Decimal('0')
-    cardtransfer_sales = sales.filter(method__in=['card', 'transfer']).aggregate(total=Sum('total'))['total'] or Decimal('0')
+    cardtransfer_sales = sales.filter(method__in=['pos', 'transfer']).aggregate(total=Sum('total'))['total'] or Decimal('0')
     total_sales = sales.aggregate(total=Sum('total'))['total'] or Decimal('0')
     num_transactions = sales.count()
     items = SaleItem.objects.filter(sale__date__date=selected_date)

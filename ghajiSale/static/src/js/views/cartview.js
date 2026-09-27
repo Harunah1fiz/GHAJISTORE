@@ -28,10 +28,15 @@ class CartView extends View {
   }
 
   _Markup(product) {
+    const unitLabel = product.saleMode === "pack" ? "case" : "unit";
     return `
     <tr class="cartItem relative" data-id="${product.id}">
-        <td>${product.name}</td>
-        <td>${product.price}</td>
+        <td>
+            <div class="font-medium">${product.name}</div>
+            ${product.saleMode === "pack" ? `<div class="text-xs text-blue-600">${product.packQty || product.qty} case(s)</div>` : ""}
+            ${product.saleMode === "mixed" ? `<div class="text-xs text-blue-600">${product.packQty || 0} case(s) + ${product.unitQty || 0} units</div>` : ""}
+        </td>
+        <td>${product.saleMode === "pack" ? Number(product.price).toLocaleString() : Number(product.price).toLocaleString()}</td>
         <td>
             <div class="flex items-center gap-2">
                 <button class="button add negative btn--update-cart" data-update-cart="sub">
@@ -42,6 +47,7 @@ class CartView extends View {
                 </div>
                 </button>
                 <span class="w-6 text-center">${product.qty}</span>
+                <span class="text-[10px] uppercase text-slate-500">${unitLabel}</span>
 
                 <button class="button add positive btn--update-cart" data-update-cart="add">
                 <div class="button-outer">
@@ -52,7 +58,7 @@ class CartView extends View {
                 </button>
             </div>
         </td>
-        <td>${product.total}</td>
+        <td>${Number(product.total).toLocaleString()}</td>
 
         <td class="delete absolute -right-4 animate-fadeInLeft delay-100 hidden btn--update-cart" data-update-cart="del">❌</td>
     </tr>

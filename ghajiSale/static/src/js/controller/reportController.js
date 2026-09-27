@@ -359,9 +359,14 @@ const controlDateNavigation = (direction) => {
 
 const controlPendingTransaction = () => {
   const pendingTransactions = OfflineSale.getOfflineSales();
-  if (pendingTransactions.length > 0) {
-    transactionLogView.render(pendingTransactions);
-  }
+  // Render table (empty array will clear table)
+  transactionLogView.render(pendingTransactions);
+
+  const badge = document.querySelector('.pending-entries');
+  if (badge) badge.textContent = pendingTransactions.length ? `${pendingTransactions.length} entries` : 'No entries';
+
+  const syncTime = document.querySelector('.sync-time');
+  if (syncTime) syncTime.textContent = pendingTransactions.length ? `Last Sync: ${new Date().toLocaleTimeString()}` : 'Last Sync: —';
 };
 
 // ── Offline Sync ──────────────────────────────────────────────────────────────

@@ -3,7 +3,10 @@
 class ReportView {
   _data;
   _currentDate = new Date();
-  _parentElement = document.querySelector(".report-view");
+
+  get parentElement() {
+    return document.querySelector(".report-view");
+  }
 
   _dateBtn = document.getElementById("report-date-btn");
   _dropdown = document.getElementById("report-dropdown");
@@ -75,7 +78,8 @@ class ReportView {
   }
 
   addHandlerChevronNav(handler) {
-    this._parentElement.querySelectorAll(".cheveron").forEach((btn) => {
+    const parentElement = this.parentElement;
+    parentElement?.querySelectorAll(".cheveron").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         const direction = btn.dataset.direction;
@@ -86,6 +90,22 @@ class ReportView {
 
   addHandlerLoadData(handler) {
     window.addEventListener("DOMContentLoaded", handler);
+  }
+
+  showLoading() {
+    const parentElement = this.parentElement;
+    if (parentElement) {
+      parentElement.classList.remove('js-ready');
+      parentElement.setAttribute('aria-busy', 'true');
+    }
+  }
+
+  hideLoading() {
+    const parentElement = this.parentElement;
+    if (parentElement) {
+      parentElement.classList.add('js-ready');
+      parentElement.removeAttribute('aria-busy');
+    }
   }
 
   renderReportCards(data) {
@@ -126,9 +146,10 @@ class ReportView {
 
   renderReportsList(reports) {
     this._data = Array.isArray(reports) ? reports : [];
-    const list = this._parentElement.querySelector(".reports-list");
+    const parentElement = this.parentElement;
+    const list = parentElement?.querySelector(".reports-list");
 
-    const emptyState = this._parentElement.querySelector("#emptyState");
+    const emptyState = parentElement?.querySelector("#emptyState");
 
     if (!list) return;
 
@@ -249,7 +270,8 @@ class ReportView {
   }
 
   addHandlerEditDeleteReport(editHandler, deleteHandler) {
-    this._parentElement.addEventListener("click", (e) => {
+    const parentElement = this.parentElement;
+    parentElement?.addEventListener("click", (e) => {
       const editButton = e.target.closest(".report-edit");
       const deleteButton = e.target.closest(".report-delete");
       if (!editButton && !deleteButton) return;

@@ -104,6 +104,7 @@ const controlBarcodeAddtoCart = function () {
     productsView.render(model.state.search.results);
     totalView.render(model.state.Transaction);
     console.log(model.state.search.results);
+    console.log(model.state.search.results);
   } catch (Err) {
     // POS AUDIO FEEDBACK: Play error sound on failure
     playSound("error");
@@ -200,6 +201,7 @@ const controlAmountReceived = function (value) {
 
   const { total, received } = model.state.Transaction;
   const balance = received - total;
+  console.log(value)
 
   totalView.updateBalance({ balance, isEnough: balance >= 0 });
 };

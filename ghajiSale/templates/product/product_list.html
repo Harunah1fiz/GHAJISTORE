@@ -153,9 +153,15 @@
                                 <tr class="hover:bg-gray-50 ">
                                     <td class="px-4 py-4 border-b border-gray-200">
                                         <div class="avater-wrapper flex items-center gap-2">
-                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md overflow-hidden w-13 h-13 flex items-center justify-center  font-semibold ">
-                                                <img src="{{ product.image.url }}" alt="" srcset="" class="w-12 h-12">
+                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md overflow-hidden w-15 h-15 flex items-center justify-center  font-semibold mr-3">
+                                                {% if product.image %}
+                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-12 h-12 object-cover">
+                                                {% else %}
+                                                    <span class="text-5xl">{{ product.name|slice:":2"|capfirst }}</span>
+                                                {% endif %}
+                                                
                                             </div>
+                                            
                                             <div class="text-left">
                                                 <p class="font-medium capitalize ">{{ product.name }}</p>
                                                 <p class="font-mono text-xs muted-foreground">· {{ product.category.name }}</p>
