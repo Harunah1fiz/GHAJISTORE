@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from product.models import Category, Inventory, Pricing, Product
 from sales_monitor.models import Sale, SaleItem
@@ -11,6 +12,8 @@ class CheckoutPackPricingTests(TestCase):
         self.category = Category.objects.create(name='Beverages')
         self.product = Product.objects.create(name='Fanta', barcode='FANTA-1', category=self.category)
         Inventory.objects.create(product=self.product, quantity=24, low_stock_threshold=2)
+        user = get_user_model().objects.create_user(username='cashier', password='test-password')
+        self.client.force_login(user)
         Pricing.objects.create(
             product=self.product,
             retail_price=Decimal('200.00'),
@@ -73,5 +76,41 @@ class CheckoutPackPricingTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         sale_item = SaleItem.objects.get()
         self.assertEqual(sale_item.itemTotal, Decimal('400.00'))
+        self.product.inventory.refresh_from_db()
+        self.assertEqual(self.product.inventory.quantity, 22)
+
+    def test_checkout_requires_an_authenticated_user(self):
+        self.client.logout()
+        response = self.client.post(
+            reverse('checkout'),
+            data={'total': '0', 'received': '0', 'items': []},
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(Sale.objects.count(), 0)
+
+    def test_retried_transaction_id_does_not_create_a_duplicate_sale(self):
+        payload = {
+            'transactionId': 'offline-tx-unique-1',
+            'total': '400.00',
+            'received': '500.00',
+            'method': 'cash',
+            'createdAt': '2025-01-15T12:00:00Z',
+            'items': [{
+                'id': self.product.id,
+                'price': '200.00',
+                'qty': 2,
+                'quantityUnits': 2,
+                'total': '400.00',
+            }],
+        }
+        first = self.client.post(reverse('checkout'), data=payload, content_type='application/json')
+        retry = self.client.post(reverse('checkout'), data=payload, content_type='application/json')
+
+        self.assertEqual(first.status_code, 200, first.content)
+        self.assertEqual(retry.status_code, 200, retry.content)
+        self.assertEqual(Sale.objects.count(), 1)
+        self.assertEqual(SaleItem.objects.count(), 1)
         self.product.inventory.refresh_from_db()
         self.assertEqual(self.product.inventory.quantity, 22)

@@ -2,6 +2,7 @@ from time import timezone
 
 from django.shortcuts import render
 import json
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
@@ -12,7 +13,11 @@ from .models import Sale, SaleItem
 
 from product.models import Product, StockMovement, Inventory
 from django.utils import timezone
+from accounts.decorators import login_required_json
 # Create your views here.
+logger = logging.getLogger(__name__)
+
+
 def sale(request):
     context = {
         'active_page': 'Sales Monitor',
@@ -20,6 +25,7 @@ def sale(request):
     return render(request,'dashboard/sale.html',context)
 
 @csrf_exempt
+@login_required_json
 def checkout(request):
     """
     Checkout endpoint with idempotency and row-level locking for inventory.
@@ -94,6 +100,7 @@ def checkout(request):
 
         return JsonResponse({'message': 'sale Saved successfully'})
     except Exception as e:
+        logger.exception('Checkout request failed')
         return JsonResponse({'error': str(e)}, status=400)
     # traceback.print_exc()
     # return JsonResponse({
@@ -106,5 +113,3 @@ def checkout(request):
 #saver healthcheck endpoint
 def health_check(request):
     return JsonResponse({"status": "ok"})
-
-
