@@ -226,26 +226,33 @@ HTTPS.
 
 ## Backups, logs, and maintenance
 
-PythonAnywhere provides `mysqldump` backup guidance from its Databases tab.
-Create a daily scheduled task to dump MySQL to a dated file in your home
-directory, download/copy backups off-account regularly, and periodically test
-restores into a separate empty database. Do not leave the only backup on the
-same account as the live database.
+The repository includes `scripts/backup_pythonanywhere_mysql.py`. It reads the
+production MySQL connection from Django settings, writes a compressed,
+permission-restricted dump under `~/backups/ghajistore/`, and retains the most
+recent 14 days. Its temporary MySQL credentials file is mode `0600` and removed
+after each run. It refuses to dump SQLite or an incomplete configuration.
 
-Example PythonAnywhere Bash backup (the single quotes around the DB name matter):
+Create a daily PythonAnywhere scheduled task for 02:30 UTC with this command:
 
 ```bash
-cd ~
-mysqldump -u yourusername -h yourusername.mysql.pythonanywhere-services.com \
-  --set-gtid-purged=OFF --no-tablespaces 'yourusername$ghajistore' \
-  > "ghajistore-$(date +%F).sql"
+/home/yourusername/.virtualenvs/ghajistore-venv/bin/python \
+  /home/yourusername/GHAJISTORE/scripts/backup_pythonanywhere_mysql.py
 ```
 
-Restore only after confirming the target database; this overwrites its data:
+Run the command once manually after deployment, then verify a non-empty
+`.sql.gz` appears in `~/backups/ghajistore/`. These backups are on the same
+PythonAnywhere account as the application, so download/copy them to a separate
+device or storage account regularly (at least weekly). Do not rely on an
+account-local backup as the only recovery copy.
+
+Restore only after confirming the target database; this overwrites its data.
+From a PythonAnywhere Bash console, replace the placeholders and enter the MySQL
+password at the prompt rather than putting it in the command:
 
 ```bash
-mysql -u yourusername -h yourusername.mysql.pythonanywhere-services.com \
-  'yourusername$ghajistore' < ghajistore-YYYY-MM-DD.sql
+gunzip -c ~/backups/ghajistore/ghajistore-YYYY-MM-DDTHHMMSSZ.sql.gz | \
+  mysql -h yourusername.mysql.pythonanywhere-services.com \
+  -u yourusername -p 'yourusername$ghajistore'
 ```
 
 Use the PythonAnywhere **Web** tab to inspect the error and server logs. Useful
