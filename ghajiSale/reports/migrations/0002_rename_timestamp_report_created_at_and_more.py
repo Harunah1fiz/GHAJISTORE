@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.PositiveIntegerField()),
-                ('adjustment_type', models.CharField()),
+                ('adjustment_type', models.CharField(max_length=20)),
                 ('reason', models.TextField()),
                 ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='product_in_stock', to='product.product')),
                 ('report', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='reports.report')),
