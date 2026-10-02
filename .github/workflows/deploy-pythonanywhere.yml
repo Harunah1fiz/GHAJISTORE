@@ -1,0 +1,45 @@
+name: Deploy to PythonAnywhere
+
+on:
+  push:
+    branches:
+      - production-ready
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pythonanywhere-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.PYTHONANYWHERE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure verified SSH access
+        env:
+          PA_SSH_PRIVATE_KEY: ${{ secrets.PA_SSH_PRIVATE_KEY }}
+          PA_SSH_KNOWN_HOSTS: ${{ secrets.PA_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$PA_SSH_PRIVATE_KEY"
+          test -n "$PA_SSH_KNOWN_HOSTS"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$PA_SSH_PRIVATE_KEY" > "$HOME/.ssh/pythonanywhere"
+          printf '%s\n' "$PA_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/pythonanywhere" "$HOME/.ssh/known_hosts"
+      - name: Pull, migrate, collect static, and reload
+        env:
+          PA_USERNAME: ${{ secrets.PA_USERNAME }}
+          PA_REPO_DIR: ${{ secrets.PA_REPO_DIR }}
+          PA_WSGI_FILE: ${{ secrets.PA_WSGI_FILE }}
+        run: |
+          test -n "$PA_USERNAME"
+          test -n "$PA_REPO_DIR"
+          test -n "$PA_WSGI_FILE"
+          ssh -i "$HOME/.ssh/pythonanywhere" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$PA_USERNAME@ssh.pythonanywhere.com" \
+            "cd '$PA_REPO_DIR' && PA_WSGI_FILE='$PA_WSGI_FILE' bash scripts/deploy-pythonanywhere.sh"

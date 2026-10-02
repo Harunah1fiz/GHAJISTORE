@@ -15,25 +15,36 @@ import os
 from dotenv import load_dotenv
 import mimetypes
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 mimetypes.add_type("text/css",".css",True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv((BASE_DIR.parent / '.env'))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+def env_bool(name, default=False):
+    return os.getenv(name, str(default)).strip().lower() in {'1', 'true', 'yes', 'on'}
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
+def env_list(name):
+    return [item.strip() for item in os.getenv(name, '').split(',') if item.strip()]
+
+
+ENVIRONMENT = os.getenv('DJANGO_ENV', 'development').strip().lower()
+DEBUG = env_bool('DEBUG', default=ENVIRONMENT != 'production')
+if ENVIRONMENT == 'production' and DEBUG:
+    raise ImproperlyConfigured('DEBUG must be False when DJANGO_ENV=production.')
+
 SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured('SECRET_KEY must be set when DEBUG=False.')
+    SECRET_KEY = 'local-development-only-do-not-use-in-production'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
-
-# CSRF trusted origins (comma separated)
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS')
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+if not DEBUG and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured('ALLOWED_HOSTS must be set when DEBUG=False.')
 
 
 
@@ -98,40 +109,78 @@ WSGI_APPLICATION = 'ghajiSale.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# DATABASE configuration: default to DATABASE_URL, fall back to SQLite for local development
-DATABASES = {
-    'default': dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
-}
+def get_database_config():
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        config = dj_database_url.parse(database_url, conn_max_age=60)
+    elif ENVIRONMENT == 'production':
+        required = ('DATABASE_NAME', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_HOST')
+        missing = [name for name in required if not os.getenv(name)]
+        if missing:
+            raise ImproperlyConfigured(
+                'Set DATABASE_URL or all required MySQL variables: ' + ', '.join(missing)
+            )
+        config = {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ['DATABASE_NAME'],
+            'USER': os.environ['DATABASE_USER'],
+            'PASSWORD': os.environ['DATABASE_PASSWORD'],
+            'HOST': os.environ['DATABASE_HOST'],
+            'PORT': os.getenv('DATABASE_PORT', '3306'),
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
+            'OPTIONS': {'charset': 'utf8mb4'},
+        }
+    else:
+        config = dj_database_url.parse(f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 
-# If using mysqlclient on platforms that require PyMySQL fallback, one could add:
-# import pymysql
-# pymysql.install_as_MySQLdb()
+    if ENVIRONMENT == 'production' and config['ENGINE'] != 'django.db.backends.mysql':
+        raise ImproperlyConfigured('Production must use MySQL; SQLite is development-only.')
+    return config
+
+
+DATABASES = {'default': get_database_config()}
 
 
 
 # Password validation
-# Ensure SECRET_KEY is set in production
-if not SECRET_KEY and DEBUG is False:
-    raise Exception('SECRET_KEY environment variable must be set in production')
-
 # Security hardening for production
 # Only enable these when DEBUG is False
 if not DEBUG:
-    # Use secure cookies
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    # Redirect HTTP to HTTPS
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'  # set to True in real HTTPS production via env
-    # HSTS
-    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
-    SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'False') == 'True'
-    # X-Frame-Options
+    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', default=False)
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=False)
+    SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', default=False)
     X_FRAME_OPTIONS = 'DENY'
-    # Content Type sniffing
-    SECURE_BROWSER_XSS_FILTER = True
-    # Don't allow content sniffing
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'production': {'format': '%(asctime)s %(levelname)s %(name)s %(message)s'},
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'production',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.getenv('LOG_LEVEL', 'INFO' if not DEBUG else 'WARNING'),
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO' if not DEBUG else 'WARNING'),
+            'propagate': False,
+        },
+    },
+}
 
 
 
@@ -168,7 +217,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR/ "static"
