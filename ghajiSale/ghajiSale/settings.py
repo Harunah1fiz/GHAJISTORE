@@ -129,7 +129,10 @@ def get_database_config():
             'PORT': os.getenv('DATABASE_PORT', '3306'),
             'CONN_MAX_AGE': 60,
             'CONN_HEALTH_CHECKS': True,
-            'OPTIONS': {'charset': 'utf8mb4'},
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'sql_mode': 'STRICT_TRANS_TABLES',
+            },
         }
     else:
         config = dj_database_url.parse(f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
