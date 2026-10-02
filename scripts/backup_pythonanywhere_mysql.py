@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import gzip
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -70,17 +71,25 @@ def main():
     now = datetime.now(timezone.utc)
     timestamp = now.strftime("%Y-%m-%dT%H%M%SZ")
     backup_path = BACKUP_DIR / f"ghajistore-{timestamp}.sql.gz"
-    temporary_path = None
+    sql_path = None
+    compressed_path = None
     client_config = None
     try:
         client_config = _write_client_config(database)
-        descriptor, temporary_name = tempfile.mkstemp(
+        descriptor, sql_name = tempfile.mkstemp(
+            prefix=".ghajistore-",
+            suffix=".sql.tmp",
+            dir=BACKUP_DIR,
+        )
+        os.close(descriptor)
+        sql_path = Path(sql_name)
+        descriptor, compressed_name = tempfile.mkstemp(
             prefix=".ghajistore-",
             suffix=".sql.gz.tmp",
             dir=BACKUP_DIR,
         )
         os.close(descriptor)
-        temporary_path = Path(temporary_name)
+        compressed_path = Path(compressed_name)
         command = [
             "mysqldump",
             f"--defaults-extra-file={client_config}",
@@ -93,25 +102,30 @@ def main():
             "--default-character-set=utf8mb4",
             database["NAME"],
         ]
-        with temporary_path.open("wb") as output:
-            with gzip.GzipFile(fileobj=output, mode="wb", mtime=0) as compressed:
-                result = subprocess.run(
-                    command,
-                    stdout=compressed,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    check=False,
-                )
+        with sql_path.open("wb") as output:
+            result = subprocess.run(
+                command,
+                stdout=output,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
         if result.returncode:
             raise RuntimeError(
                 f"mysqldump failed with exit code {result.returncode}: "
                 f"{result.stderr.strip()}"
             )
-        if temporary_path.stat().st_size == 0:
+        if sql_path.stat().st_size == 0:
             raise RuntimeError("mysqldump produced an empty backup.")
 
-        os.chmod(temporary_path, 0o600)
-        os.replace(temporary_path, backup_path)
+        with sql_path.open("rb") as source, compressed_path.open("wb") as output:
+            with gzip.GzipFile(fileobj=output, mode="wb", mtime=0) as compressed:
+                shutil.copyfileobj(source, compressed)
+        if compressed_path.stat().st_size == 0:
+            raise RuntimeError("gzip produced an empty backup.")
+
+        os.chmod(compressed_path, 0o600)
+        os.replace(compressed_path, backup_path)
         removed = _prune_old_backups(now)
         size = backup_path.stat().st_size
         print(
@@ -121,8 +135,10 @@ def main():
     finally:
         if client_config is not None:
             client_config.unlink(missing_ok=True)
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
+        if sql_path is not None:
+            sql_path.unlink(missing_ok=True)
+        if compressed_path is not None:
+            compressed_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
