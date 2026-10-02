@@ -491,7 +491,7 @@ export const prepareTransaction = function () {
 };
 export const checkServer = async function () {
   try {
-    const res = await fetch("api/health", { cache: "no-store" });
+    const res = await fetch("/sales/api/health", { cache: "no-store" });
 
     return res.ok;
   } catch (err) {

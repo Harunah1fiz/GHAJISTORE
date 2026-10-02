@@ -27,7 +27,7 @@ class categoriesView extends ModalView{
                                     <div class="modalContent">
                                     <div class="flex gap-1.5 w-full ">
                                     <figure class="w-50 flex-1">
-                                        <img src="./assets/images/product-23.png" alt="" srcset="" class="w-32 h-32">
+                                        <img src="/static/src/images/product-placeholder.svg" alt="Category placeholder" class="w-32 h-32">
                                     </figure>
                                     <ul class=" flex-2">
                                         <li>
