@@ -1,4 +1,3 @@
-@import "tailwindcss";
 
 .categories, .cartItemContainer{
     overflow-x: auto;

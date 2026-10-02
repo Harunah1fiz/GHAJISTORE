@@ -95,7 +95,7 @@ sources. The repository root contains `requirements.txt` and the deploy script.
    workon ghajistore-venv
    python manage.py check --deploy
    python manage.py migrate
-   python manage.py collectstatic --noinput
+   python manage.py collectstatic --noinput --ignore='*input.css'
    ```
 
 10. Create the upload directory and, in the **Web** tab, map `/static/` to
@@ -159,8 +159,10 @@ sources. The repository root contains `requirements.txt` and the deploy script.
    deployment script applies it before reloading. Review migrations before
    production. Do not run `makemigrations` on the live server.
 5. For static changes, the deploy script runs `collectstatic`; verify the
-   affected URLs after reload. Uploaded media is not collected as static and
-   must not be removed when updating code.
+   affected URLs after reload. The checked-in `tailwind.css` is the generated
+   stylesheet; `input.css` is only its Tailwind build input and is excluded
+   from collection. Uploaded media is not collected as static and must not be
+   removed when updating code.
 
 ### Optional GitHub-triggered deployment
 
@@ -253,7 +255,7 @@ commands from `~/GHAJISTORE/ghajiSale` are:
 workon ghajistore-venv
 python manage.py check --deploy
 python manage.py migrate
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --ignore='*input.css'
 python manage.py createsuperuser
 python manage.py test
 ```

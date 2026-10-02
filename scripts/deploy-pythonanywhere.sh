@@ -27,6 +27,6 @@ python -m pip install -r "$repo_dir/requirements.txt"
 cd "$project_dir"
 python manage.py check --deploy
 python manage.py migrate --noinput
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --ignore='*input.css'
 touch "$PA_WSGI_FILE"
 echo "Deployment finished; PythonAnywhere WSGI reload requested."
