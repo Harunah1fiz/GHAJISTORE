@@ -36,6 +36,7 @@ addHandlerExpiredCheck() {
 
 addHandlerAddStock(handler) {
     const addStockBtn = this._parentElement.querySelector(".confirm__addstock");
+    if (!addStockBtn) return;
 
     addStockBtn.addEventListener("click", () => {
 

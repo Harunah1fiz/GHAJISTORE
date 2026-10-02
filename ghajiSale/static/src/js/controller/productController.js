@@ -57,11 +57,6 @@ const controlBussinessProjection = function (data) {
     InventorySettingView.renderResult(projection);
 };
 
-window.addEventListener('DOMContentLoaded', function () {
-    const data = InventorySettingView.getInputData();
-    controlBussinessProjection(data);
-});
-
 const packController = function(isPack){
     model.setPackState(isPack);
 }

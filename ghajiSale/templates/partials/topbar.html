@@ -41,9 +41,10 @@
 
                             <!-- Profile -->
                             <div class="profile flex items-center relative cursor-pointer">
-                                <img src="./assets/images/destination_2.jpg" alt=""
-                                    class="rounded-full w-10 h-10 shadow-sm"
+                                <span class="grid place-items-center rounded-full w-10 h-10 shadow-sm bg-slate-100 text-slate-600"
                                     id="profile-detail">
+                                    <i data-lucide="user-round" class="w-5 h-5"></i>
+                                </span>
 
                                 <span id="online-status"
                                     class="absolute bottom-0 left-7 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full">
@@ -58,7 +59,9 @@
 
         <div class="flex items-center gap-3 border-b border-gray-200 pb-4">
             <div class="imageContainer">
-            <img src="./assets/images/destination_2.jpg" class="profile-image w-12 h-12 rounded-full">
+            <span class="grid place-items-center w-12 h-12 rounded-full bg-slate-100 text-slate-600">
+                <i data-lucide="user-round" class="w-6 h-6"></i>
+            </span>
             </div>
             <span class=" text-sm leading-tight">
                 <p class="text-base tracking-wide font-bold">{{ request.user.get_full_name|default:request.user.username }}</p>
