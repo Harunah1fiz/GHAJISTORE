@@ -4,6 +4,7 @@
 {% block styles %}
     <link rel="stylesheet" href="{% static 'src/css/page/sale.css' %}">
     <link rel="stylesheet" href="{% static 'src/css/page/addProduct.css' %}">
+    <meta name="offline-attribution-ticket" content="{{ offline_attribution_ticket }}">
 {% endblock%}
 {% block scripts %}
 <script type="module" src="{% static 'src/js/controller/salesController.js' %}"></script>
@@ -59,7 +60,7 @@
     </div> -->
 
     <!-- Product List -->
-    <div class="neu-inset productList h-85">
+    <div class="neu-inset productList h-90">
       <p class="font-semibold text-gray-600 mb-2">Products</p>
 
       <!-- Example Product Row -->
@@ -77,10 +78,10 @@
     <div class="flex flex-col h-full">
 
     <!-- CART ITEMS -->
-    <div class="cartBox neo-inner bg-white relative rounded-md p-2 flex-1 "> 
+    <div class="cartBox neo-inner bg-white relative rounded-md p-2 flex-1 overflow-hidden basis-3xs"> 
         <div class="font-bold mb-2 text-lg">Cart</div>
         <div class="cartItemContainer overflow-y-auto  h-50  px-5 w-full absolute left-0">
-        <table class="cartItem w-full text-left table-auto  h-20 overflow-y-auto">
+        <table class="cartItem w-full text-left table-auto  h-20 overflow-y-auto border border-amber-400">
         <thead class="sticky top-0">
         <tr>
         <th>Item Name</th>

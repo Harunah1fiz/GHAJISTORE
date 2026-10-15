@@ -1,4 +1,5 @@
 import { storage } from "./utils/storage.js";
+import { getCSRFToken } from "./helper.js";
 
 export const state = {
     product: {},
@@ -169,6 +170,7 @@ export const addQuantity = async function({quantity, lowInventory,expiry_date, i
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
         },
         body: JSON.stringify({ quantity, lowInventory, expiry_date }),
     });

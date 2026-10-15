@@ -14,6 +14,7 @@
 {% block content %}
     <section class="content px-5 py-7 overflow-y-scroll box-border h-9/10 mb-8">
                     <section class="store_summary module_inner mb-8 bg-white rounded-md px-3 py-5 justify-between flex shadow-md/50 shadow-gray-400">
+                        {% if show_business_reports %}
                         <div class="flex text-gray-500 gap-6 border-r border-gray-300 px-6">
                             <div class="flex flex-col gap-2">
                             <p>Store Sale</p>
@@ -35,6 +36,7 @@
                                 <i data-lucide="arrow-right-left"></i>
                             </div>
                         </div>
+                        {% endif %}
                         <div class="flex text-gray-500 gap-6 border-r border-gray-300 px-6 ">
                             <!-- <i data-lucide="home" class="w-5 h-5 inline-block text-gray-500"></i> <span class="text-gray-500">/</span> <span class="text-gray-700 font-medium">Category List</span> -->
                             <div class="flex flex-col gap-2">
@@ -61,10 +63,12 @@
                     <section class="tableContainer product_container rounded-lg shadow-md/50 shadow-gray-400  py-3 ">
                     <section class="filter px-6 py-6 border-b border-gray-300 mb-5">
 
+                    {% if show_business_reports %}
                     <button class="neo-add addCategory flex px-4 py-2 rounded-md gap-1.5 text-white items-center mb-4 shrink float-right" data-modal="add-category">
                     <i data-lucide="plus" class="w-5 h-5 "></i>
                     <span>Add item</span>
                     </button>
+                    {% endif %}
 <form method="GET">
 
     <!-- Category -->
@@ -138,13 +142,13 @@
                         <table class="product_table w-full table-auto border-collapse ">
                             <thead class="fields">
                                 <tr class="text-xm font-medium">
-                                    <th class="border"><div><p>Product</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                    <th class=""><div><p>Product</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
                                     <th class=""><p>Action</p></th>
                                     <th class=""><p>Stock</p></th>
                                     <th>On hand</th>
                                     <th>ReOrder at</th>
                                     <th>Turnover<br>(30d)</th>
-                                    <th class=""><div><p>Total Earning</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>
+                                    {% if show_business_reports %}<th class=""><div><p>Total Earning</p><div class="absolute right-2""><i data-lucide="chevron-up"></i><i data-lucide="chevron-down"></i></div></div></th>{% endif %}
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -153,14 +157,15 @@
                                 <tr class="hover:bg-gray-50 ">
                                     <td class="px-4 py-4 border-b border-gray-200">
                                         <div class="avater-wrapper flex items-center gap-2">
-                                            <div class="avater bg-indigo-100 text-indigo-600 rounded-md overflow-hidden w-15 h-15 flex items-center justify-center  font-semibold mr-3">
+                                            <div class="avater bg-white text-blue-600 rounded-md overflow-hidden w-15 h-15 flex items-center justify-center  font-bold mr-3">
                                                 {% if product.image %}
                                                     <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-12 h-12 object-cover">
                                                 {% else %}
-                                                    <span class="text-5xl">{{ product.name|slice:":2"|capfirst }}</span>
+                                                    <p class="text-3xl">{{ product.name|slice:":2"|capfirst }}</p>
                                                 {% endif %}
                                                 
                                             </div>
+                                            
                                             
                                             <div class="text-left">
                                                 <p class="font-medium capitalize ">{{ product.name }}</p>
@@ -178,18 +183,19 @@
                                                 </div>
                                             </div>
                                         </button>
-                                        <button class="button add negative trash">
+                                        {% if show_business_reports %}<button class="button add negative trash">
                                             <div class="button-outer">
                                                 <div class="button-inner">
                                                 <i data-lucide="trash" class="w-5 h-5"></i>
                                                 </div>
                                             </div>
                                         </button>
+                                        {% endif %}
                                         
                                     </td>
                                     <td class="px-4 border-b border-gray-200 text-center">
                                         <div class="relative w-11 h-5 inline-block">
-                                            <input type="checkbox" {% if product.is_active %}checked{%endif%} name="" id="switch-component-1" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
+                                            <input type="checkbox" {% if product.is_active %}checked{%endif%} {% if not show_business_reports %}disabled{% endif %} name="" id="switch-component-1" class="peer appearance-none w-10 h-5 border border-gray-400/50 rounded-full  inset-shadow-sm inset-shadow-gray-500/50  transition-colors duration-200 checked:bg-indigo-500">
                                             <label for="switch-component-1" class="absolute top-0.5 left-0.5 ml-1 w-4 h-4 rounded-full bg-white shadow-sm peer-checked:translate-x-4.5  peer-checked:border-slate-800 cursor-pointer transition-transform duration-200"></label>
                                             
                                         </div>
@@ -205,7 +211,7 @@
                                     </td>
                                     <td class="px-4 py-3 border-b border-gray-200 text-center text-sm ">{{ product.inventory.low_stock_threshold }}</td>
                                     <td class="px-4 py-3 border-b border-gray-200 text-center text-sm">{{ product.turnover_rate|floatformat:2 }}</td>
-                                    <td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">₦{{ product.total_profit|floatformat:2 }}</td>
+                                    {% if show_business_reports %}<td class="px-4 py-3 border-b border-gray-200 text-right text-lg font-bold">₦{{ product.total_profit|floatformat:2 }}</td>{% endif %}
                                     <td class="">
                                         <div class="flex justify-center items-center">
                                             <span class="neu-pill status-badge status-{{product.stock_status}} font-bold">
@@ -425,10 +431,10 @@
                                         </li>
                                     </ul>
                                     </div>
-                                    <div class="totalEarning flex justify-between items-center mt-4 border-t pt-4">
+                                    {% if show_business_reports %}<div class="totalEarning flex justify-between items-center mt-4 border-t pt-4">
                                             <p class="font-bold text-xl">Total Earning:</p>
                                             <div class=" font-medium text-xl text-green-600">$5000</div>
-                                    </div>
+                                    </div>{% endif %}
                                     <!-- <ul>
                                         <li>
                                             <p>Product:</p>
@@ -469,7 +475,7 @@
                                         </li>
                                     </ul> -->
                                     <div class="modalActions flex justify-end gap-3 mt-4">
-                                        <button class=" cancelChanges neo-btn neutral neo-actions px-3">cancel</button>
+                                        <button class="cancelChanges neo-btn neutral neo-actions px-3">cancel</button>
                                         <button class="px-3 saveChanges neo-btn success neo-actions">Save Changes</button>
                                     </div>
                                     </div>

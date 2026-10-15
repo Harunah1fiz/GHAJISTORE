@@ -68,12 +68,12 @@ _generateMarkup(product) {
                                         class="w-15 h-15 object-cover rounded-md"
                                         alt="${product.name}"
                                     >
-                                  `
+                                `
                                 : `
-                                    <p class="text-xl text-gray-500">
+                                    <p class="text-3xl text-blue-700 font-bold">
                                         ${initials}
                                     </p>
-                                  `
+                                `
                         }
                     </div>
 

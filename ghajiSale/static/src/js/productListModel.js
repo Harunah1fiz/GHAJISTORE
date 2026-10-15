@@ -1,3 +1,5 @@
+import { getCSRFToken } from "./helper.js";
+
 export const state = {
     search: {
         query: '',
@@ -20,6 +22,7 @@ const createSimpleProduct = function(data){
         price: product.price,
         lowStock: product.low_stock,
         totalProfit: product.total_profit,
+        edit_links: product.edit_links,
     }
 }
 export async function getProduct(id){
@@ -43,6 +46,7 @@ export async function activateDeactivateProduct(id, status){
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
             },
             body: JSON.stringify({ status }),
         });

@@ -1,0 +1,165 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Staff Management{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'src/css/page/addProduct.css' %}">
+  {% endblock%}
+{% block content %}
+<section class="content overflow-y-scroll px-5 py-7 box-border h-9/10 mb-8">
+  <div class="mx-auto max-w-5xl space-y-8">
+    <section class="neu rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Create staff account</h2>
+      <form method="post" class="grid gap-4 md:grid-cols-2">
+        {% csrf_token %}
+        {% for field in form %}
+          {% if field.name != 'is_superuser' or is_admin %}
+            <label class="flex flex-col gap-1 text-sm font-medium">
+              {{ field.label }}
+              {{ field |add_class:"inputText w-full border border-gray-300 rounded-md px-3 py-2" }}
+              {% for error in field.errors %}<span class="text-red-600">{{ error }}</span>{% endfor %}
+            </label>
+          {% endif %}
+        {% endfor %}
+        <button class="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white md:col-span-2" type="submit">Create account</button>
+      </form>
+      
+    </section>
+
+<section class="neu rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
+    <h2 class="mb-4 text-xl font-semibold">Staff accounts</h2>
+
+    <div class="overflow-x-auto border">
+        <table class="w-full border-collapse text-left text-sm">
+            <thead>
+                <tr class="border-b border-gray-200 bg-gray-50 text-gray-600">
+                    <th class="px-4 py-3 font-semibold">Staff</th>
+                    <th class="px-4 py-3 font-semibold">First name</th>
+                    <th class="px-4 py-3 font-semibold">Last name</th>
+                    <th class="px-4 py-3 font-semibold">Email</th>
+                    <th class="px-4 py-3 font-semibold">Role</th>
+                    <th class="px-4 py-3 font-semibold">Active</th>
+                    {% if is_admin %}
+                        <th class="px-4 py-3 font-semibold">Superuser</th>
+                    {% endif %}
+                    <th class="px-4 py-3 font-semibold">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-100">
+                {% for staff_user in staff_users %}
+                    <tr class="transition hover:bg-gray-50">
+                        <form
+                            method="post"
+                            action="{% url 'update_staff' staff_user.pk %}"
+                        >
+                            {% csrf_token %}
+
+                            <td class="px-4 py-3">
+                                <p class="font-semibold text-gray-800">
+                                    {{ staff_user.get_full_name|default:staff_user.username }}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    {{ staff_user.username }}
+                                </p>
+                            </td>
+
+                            <td class="px-4 py-3">
+                                <input
+                                    type="text"
+                                    name="first_name"
+                                    value="{{ staff_user.first_name }}"
+                                    placeholder="First name"
+                                    class="w-32 rounded-lg border border-gray-300 px-3 py-2 focus:border-slate-500 focus:outline-none"
+                                >
+                            </td>
+
+                            <td class="px-4 py-3">
+                                <input
+                                    type="text"
+                                    name="last_name"
+                                    value="{{ staff_user.last_name }}"
+                                    placeholder="Last name"
+                                    class="w-32 rounded-lg border border-gray-300 px-3 py-2 focus:border-slate-500 focus:outline-none"
+                                >
+                            </td>
+
+                            <td class="px-4 py-3">
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value="{{ staff_user.email }}"
+                                    placeholder="Email"
+                                    class="w-48 rounded-lg border border-gray-300 px-3 py-2 focus:border-slate-500 focus:outline-none"
+                                >
+                            </td>
+
+                            <td class="px-4 py-3">
+                                <select
+                                    name="role"
+                                    class="rounded-lg border border-gray-300 bg-white px-3 py-2 focus:border-slate-500 focus:outline-none"
+                                >
+                                    {% for role in available_roles %}
+                                        <option
+                                            value="{{ role }}"
+                                            {% if role in staff_user.role_names %}selected{% endif %}
+                                        >
+                                            {{ role }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+
+                            <td class="px-4 py-3">
+                                <label class="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        name="is_active"
+                                        {% if staff_user.is_active %}checked{% endif %}
+                                        class="h-4 w-4 rounded accent-slate-800"
+                                    >
+                                    <span class="text-xs text-gray-600">
+                                        {% if staff_user.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </label>
+                            </td>
+
+                            {% if is_admin %}
+                                <td class="px-4 py-3">
+                                    <input
+                                        type="checkbox"
+                                        name="is_superuser"
+                                        {% if staff_user.is_superuser %}checked{% endif %}
+                                        class="h-4 w-4 rounded accent-slate-800"
+                                    >
+                                </td>
+                            {% endif %}
+
+                            <td class="px-4 py-3">
+                                <button
+                                    type="submit"
+                                    class="rounded-lg bg-slate-800 px-4 py-2 font-medium text-white transition hover:bg-slate-700"
+                                >
+                                    Save
+                                </button>
+                            </td>
+                        </form>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="{% if is_admin %}8{% else %}7{% endif %}"
+                            class="px-4 py-10 text-center text-gray-500"
+                        >
+                            No staff accounts found.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+  </div>
+</section>
+{% endblock %}

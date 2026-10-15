@@ -249,10 +249,10 @@
                                 </td>
 
                                 <td class="right mono">
-                                    {{ high_value_product.pricing.retail_price|floatformat:2 }}
+                                    {{ high_value_product.pricing.retail_price|currency }}
                                 </td>
                                 <td class="right value-text">
-                                    {{ high_value_product.stock_value|floatformat:2 }}
+                                    {{ high_value_product.stock_value|currency }}
                                 </td>
                                 <td class="">
                                     <div class="percent-wrapper">
@@ -304,7 +304,7 @@
 
         </div>
 
-        <div class="grid lg:grid-cols-3 sm:grid-cols-2 mt-4 mb-3 gap-2">
+        <div class="grid lg:grid-cols-3 sm:grid-cols-2 mt-4 mb-3 gap-4 overflow-auto h-120 scroll-smooth scrollbar-thin p-4">
 
             <!-- card -->
             {% for category in categories %}
@@ -340,7 +340,7 @@
                 </p>
 
                 <p class="category-stat-value">
-                    {{category.stock_value|floatformat:2}}
+                    {{ category.stock_value|currency }}
                 </p>
                 </div>
 
@@ -412,12 +412,17 @@
 
             <div class="fast-product">
 
-                <div class="fast-emoji">
-                <img src="{{ product.image.url }}" alt="" srcset="" class="rounded-full w-8 h-8 object-cover">
+                <div class="avater bg-white rounded-md overflow-hidden w-12 h-12 flex items-center justify-center  font-bold mr-2">
+                
+                {% if product.image %}
+                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class=" rounded-full w-8 h-8 object-cover">
+                                                {% else %}
+                                                    <span class="text-3xl">{{ product.name|slice:":2"|capfirst }}</span>
+                                                {% endif %}
                 </div>
 
                 <div>
-                <p class="fast-name">{{product.name}}</p>
+                <p class="font-semibold text-gray-600 capitalize">{{product.name}}</p>
 
                 <p class="fast-meta">
                     {{product.sold_30days}} units sold
@@ -472,8 +477,13 @@
 
             <div class="slow-top">
 
-            <div class="fast-emoji">
-                <img src="{{ product.image.url }}" alt="" srcset="" class="rounded-full w-8 h-8 object-cover">
+            <div class="avater bg-white rounded-full overflow-hidden w-12 h-12 flex items-center justify-center  font-bold mr-2">
+                
+                {% if product.image %}
+                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-8 h-8 rounded-full object-cover">
+                                                {% else %}
+                                                    <span class="text-3xl">{{ product.name|slice:":2"|capfirst }}</span>
+                                                {% endif %}
             </div>
 
             <span class="slow-badge">
@@ -482,7 +492,7 @@
 
             </div>
 
-            <p class="slow-name">
+            <p class=" font-semibold text-gray-600 capitalize">
             {{product.name}}
             </p>
 

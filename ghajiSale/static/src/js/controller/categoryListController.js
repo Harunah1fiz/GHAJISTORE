@@ -17,3 +17,4 @@ const init = function(){
     categoriesView.addHandlerClose()
 }
 init()
+lucide.createIcons();

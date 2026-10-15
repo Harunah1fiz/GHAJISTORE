@@ -13,7 +13,7 @@
 {% endblock %}
     {% block pageName %} Daily Sales {%endblock%}
 {% block content %}
-  <section class="content overflow-y-scroll border p-6 h-9/10 mb-8 report-view relative">
+  <section class="content overflow-y-scroll p-6 h-9/10 mb-8 report-view relative">
   <div class="flex items-center justify-between mb-4">
     <!-- Report Information -->
     <div>
@@ -105,9 +105,9 @@
       </div>
     </div>
     <p class="-mt-2 text-md text-gray-400">
-      Cashier:
+      Username:
       <span class="font-medium bg-clip-text text-transparent bg-linear-to-r from-cyan-600 to-blue-500" id="cashier-name">
-      Amaka O.
+      {{ cashier_name }}
       </span>
     </p>
     </div>
@@ -251,6 +251,16 @@
     </h2>
     </div>
   </section>
+  {% if show_business_reports %}
+  <section class="neu-sm mb-8 overflow-x-auto p-4">
+    <h2 class="mb-3 text-lg font-semibold">Employee sales and performance</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="border-b text-left"><th class="p-2">Employee</th><th class="p-2 text-right">Sales</th><th class="p-2 text-right">Transactions</th><th class="p-2 text-right">Items</th><th class="p-2 text-right">Profit</th></tr></thead>
+      <tbody id="employee-sales-rows"><tr><td class="p-2 text-gray-500" colspan="5">Loading employee totals…</td></tr></tbody>
+      <tfoot id="unattributed-sales-row"></tfoot>
+    </table>
+  </section>
+  {% endif %}
   <section class="neu-inset p-4 mb-8">
     <h2 class="text-xl font-semibold text-gray-800 mb-4">
     Report Something
@@ -258,6 +268,7 @@
     <div class="flex gap-2 sm:grid-cols-2 report-options">
       <!-- <i data-lucide="receipt"></i> -->
        <!-- Record unexpected or manual expenses -->
+    {% if show_business_reports %}
     <!-- ITEM 1 -->
       <button class="neu neu-pressable flex items-center gap-4 rounded-md border border-white/10 bg-white/5 p-3 text-left transition hover:border-white/30 hover:shadow-md active:scale-[0.99]" data-type="expense">
       <div class="text-3xl report-icon">
@@ -272,7 +283,9 @@
       </span>
       </span>
     </button>
+    {% endif %}
     <!-- ITEM 2 -->
+    {% if show_business_reports %}
     <button class="neu neu-pressable flex items-center gap-4 rounded-md border border-white/10 bg-white/5 p-4 text-left transition hover:border-white/30 hover:shadow-md active:scale-[0.99]" data-type="stock">
       <div class="text-3xl report-icon">
       <i data-lucide="package"></i>
@@ -286,6 +299,7 @@
       </span>
       </span>
     </button>
+    {% endif %}
     <!-- ITEM 3 -->
     <button class="neu neu-pressable flex items-center gap-4 rounded-md border border-white/10 bg-white/5 p-4 text-left transition hover:border-white/30 hover:shadow-md active:scale-[0.99]" data-type="cash">
       <div class="text-3xl report-icon">
@@ -392,44 +406,23 @@
       </table>
       </div>
     </div>
+    
+    </div>
     <section class="neu-inset mt-4 mb-4 p-4 flex-1">
       <h2 class="mb-3 text-lg font-semibold text-blue-700">
       End of shift check
       </h2>
-      <div class="space-y-4 p-4 rounded-2xl">
-      <!-- EXPECTED CASH -->
       <div class="flex items-center justify-between">
-        <span class="text-sm text-gray-400">
-        Expected Cash
-        </span>
-        <span class="font-semibold">
-        ₦125,000
-        </span>
-      </div>
+      
       <!-- CASH COUNT INPUT -->
-      <div class="space-y-2">
-        <label class="text-sm" for="counted">
-        Cash Counted
-        </label>
-        <input class="w-full h-12 neu-inset rounded-xl bg-white/5 border border-white/10 px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="counted" inputmode="numeric" placeholder="Enter amount" type="text">
-        </input>
-      </div>
-      <!-- DIFFERENCE -->
-      <div class="flex items-center justify-between">
-        <span class="text-sm">
-        Difference
-        </span>
-        <span class="text-gray-400 font-semibold" id="difference">
-        —
-        </span>
-      </div>
+      
+      
       <!-- SUBMIT BUTTON -->
       <button class="w-full h-12 neu-sm neu-pressable text-blue-700 font-semibold rounded-xl hover:bg-blue-700/10 active:bg-blue-700/20 transition" id="openEndShift">
         End Shift
       </button>
       </div>
     </section>
-    </div>
   </section>
   {% include 'partials/reportModal.html' %}
   <div id="endShiftModal" class="fixed inset-0 hidden items-center justify-center bg-black/40 backdrop-blur-sm z-50">
@@ -439,7 +432,7 @@
         <div class="grid grid-cols-2 gap-3 text-sm"><div class="neu-inset p-3"><span class="block text-gray-500">Opening Balance</span><strong id="end-shift-opening">See summary</strong></div><div class="neu-inset p-3"><span class="block text-gray-500">Expected Cash</span><strong id="end-shift-expected">See summary</strong></div><div class="neu-inset p-3"><span class="block text-gray-500">Total Sales</span><strong id="end-shift-sales">See summary</strong></div><div class="neu-inset p-3"><span class="block text-gray-500">Difference</span><strong id="end-shift-difference">â‚¦0.00</strong></div></div>
         <div><label class="block text-sm font-medium mb-1" for="counted_cash">Counted Cash</label><input required min="0" step="0.01" id="counted_cash" name="counted_cash" type="number" class="w-full border rounded-md px-3 py-2 inputText" placeholder="Enter counted cash"></div>
         <div><label class="block text-sm font-medium mb-1" for="shift_notes">Notes</label><textarea required id="shift_notes" name="notes" class="w-full border rounded-md px-3 py-2 inputText" placeholder="Explain any difference"></textarea></div>
-        <div class="flex justify-end gap-3"><button type="button" class="close-end-shift neu-pressable px-4 py-2 rounded-xl">Cancel</button><button type="submit" class="neu-pressable px-4 py-2 rounded-xl bg-cyan-600 text-white">Submit End-of-Shift Report</button></div>
+        <div class="flex justify-end gap-3"><button type="button" class="close-end-shift neu-pressable px-4 py-2 rounded-xl">Cancel</button><button type="submit" class="neu-pressable px-4 py-2 rounded-xl bg-blue-700 text-white">Submit End-of-Shift Report</button></div>
       </form>
     </div>
   </div>

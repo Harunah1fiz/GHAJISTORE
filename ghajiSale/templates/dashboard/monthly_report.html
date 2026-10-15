@@ -23,9 +23,9 @@
       /* Simple modal for module detail */
       .module-detail-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 60; }
       .module-detail-modal.active { display: flex; }
-      .module-detail-modal .modal { background: white; max-width: 820px; width: 95%; border-radius: 12px; padding: 18px; }
+      .module-detail-modal .modal {  max-width: 820px;  border-radius: 12px; padding: 18px; }
     </style>
-    <section class="report-view content overflow-y-scroll border p-5 h-9/10 mb-8 grow">
+    <section class="report-view content overflow-y-scroll p-5 h-9/10 mb-8 grow">
         
         <header class="flex justify-between gap-3 sm:flex-row sm:items-end">
                             <div>
@@ -286,7 +286,7 @@
 
         <div>
             
-            <h3>Revenue vs Expenses</h3>
+            <h2>Revenue vs Expenses</h2>
             <p>Last 12 months</p>
         </div>
         <div class="business-status positive">
@@ -320,7 +320,7 @@
 </div> 
 <div class="neu-card expense-card flex-1">
 
-    <h3>Expense Breakdown</h3>
+    <h2>Expense Breakdown</h2>
 
     <div class="donut-wrapper">
 
@@ -493,7 +493,7 @@
     </p>
   </div>
 
-  <div id="category-performance" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+  <div id="category-performance" class="snap-scroll grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-scroll h-100 scroll-smooth scrollbar-thin">
 
     <!-- CARD 1 -->
     <div class="neu-inset p-4">
@@ -649,10 +649,10 @@
   </div>
 
   <!-- performing product -->
-      <div class="neu-card p-6">
+<div class="neu-card p-6">
 
   <!-- HEADER -->
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-5 ">
     <div>
       <h3 class="font-semibold tracking-tight">Top Performing Products</h3>
       <p class="text-xs text-gray-400 mt-0.5">
@@ -674,10 +674,10 @@
   </div>
 
   <!-- TABLE -->
-  <div class="overflow-x-auto">
-    <table class="w-full text-sm min-w-160 h-80">
+  <div class="overflow-y-scroll h-80 scroll-smooth scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+    <table class="text-sm min-w-160 ">
 
-      <thead>
+      <thead class="sticky top-0">
         <tr class="text-[11px] uppercase text-gray-400">
           <th class="text-left pb-3 pl-2">Product</th>
           <th class="text-right pb-3">Units</th>
@@ -888,7 +888,7 @@
     </section>
 
     <!-- Module detail modal (populated by MonthlyDetailsView) -->
-    <div id="moduleDetailModal" class="module-detail-modal" aria-hidden="true">
+    <div id="moduleDetailModal" class="module-detail-modal animate-modalUp backdrop-blur-sm" aria-hidden="true">
       <div class="modal p-4">
         <div class="flex justify-between items-start mb-3">
           <div>

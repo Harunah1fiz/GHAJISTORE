@@ -1,96 +1,134 @@
-from time import timezone
-
-from django.shortcuts import render
 import json
 import logging
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal, InvalidOperation
+
+from django.contrib.auth import get_user_model
+from django.core import signing
 from django.db import transaction
-from django.utils.dateparse import parse_datetime
 from django.db.models import F
-from decimal import Decimal
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+from accounts.decorators import login_required_json, role_required
+from product.models import Inventory, Product, StockMovement
 from .models import Sale, SaleItem
 
-from product.models import Product, StockMovement, Inventory
-from django.utils import timezone
-from accounts.decorators import login_required_json
-# Create your views here.
 logger = logging.getLogger(__name__)
+OFFLINE_TICKET_SALT = 'sales_monitor.offline-attribution'
+OFFLINE_TICKET_MAX_AGE = 60 * 60 * 24 * 90
+User = get_user_model()
 
 
-def sale(request):
-    context = {
-        'active_page': 'Sales Monitor',
-    }
-    return render(request,'dashboard/sale.html',context)
+def issue_offline_attribution_ticket(user):
+    return signing.dumps({'user_id': user.pk}, salt=OFFLINE_TICKET_SALT)
 
-@csrf_exempt
+
 @login_required_json
-def checkout(request):
-    """
-    Checkout endpoint with idempotency and row-level locking for inventory.
-    Expects JSON payload with transactionId, deviceId, createdAt/date, total, received, items[]
+@role_required('Admin', 'Manager', 'Hybrid', 'Cashier')
+@ensure_csrf_cookie
+def sale(request):
+    return render(request, 'dashboard/sale.html', {
+        'active_page': 'Sales Monitor',
+        'offline_attribution_ticket': issue_offline_attribution_ticket(request.user),
+    })
 
-    Behavior:
-    - If transactionId is provided and a Sale with that transaction_id already exists, returns success (idempotent).
-    - Uses select_for_update on Inventory rows to avoid race conditions when deducting stock.
-    """
+
+@login_required_json
+@role_required('Admin', 'Manager', 'Hybrid', 'Cashier')
+def checkout(request):
     if request.method != 'POST':
-        return JsonResponse({'error': 'invalid Method'}, status=405)
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     try:
         data = json.loads(request.body)
-        parsed_date = parse_datetime(data.get('date') or data.get('createdAt'))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({'error': 'Invalid JSON body'}, status=400)
+
+    offline_ticket = data.get('offlineAttributionTicket')
+    if data.get('offlineSync') and not offline_ticket:
+        return JsonResponse({'error': 'Offline attribution ticket is required'}, status=403)
+
+    cashier = request.user
+    if offline_ticket:
+        try:
+            payload = signing.loads(
+                offline_ticket,
+                salt=OFFLINE_TICKET_SALT,
+                max_age=OFFLINE_TICKET_MAX_AGE,
+            )
+            ticket_user = User.objects.get(pk=payload['user_id'], is_active=True)
+        except (signing.BadSignature, User.DoesNotExist, KeyError, TypeError, ValueError):
+            return JsonResponse({'error': 'Invalid or expired offline attribution ticket'}, status=403)
+        if data.get('offlineSync'):
+            cashier = ticket_user
+
+    transaction_id = data.get('transactionId')
+    if transaction_id:
+        existing_sale = Sale.objects.filter(transaction_id=transaction_id).first()
+        if existing_sale:
+            return JsonResponse({
+                'message': 'sale already processed (idempotent)',
+                'cashier_id': existing_sale.cashier_id,
+            })
+
+    try:
+        date_value = data.get('date') or data.get('createdAt')
+        parsed_date = parse_datetime(date_value) if isinstance(date_value, str) else None
         if not parsed_date:
             parsed_date = timezone.now()
+        if timezone.is_naive(parsed_date):
+            parsed_date = timezone.make_aware(parsed_date, timezone.get_current_timezone())
 
-        transaction_id = data.get('transactionId')
-        # Idempotency: if transaction_id provided and already exists, return success
-        if transaction_id:
-            if Sale.objects.filter(transaction_id=transaction_id).exists():
-                return JsonResponse({'message': 'sale already processed (idempotent)'})
+        total = Decimal(str(data['total']))
+        received = Decimal(str(data['received']))
+        items = data['items']
+        if not isinstance(items, list) or not items:
+            return JsonResponse({'error': 'At least one sale item is required'}, status=400)
 
         with transaction.atomic():
-            # We'll lock involved inventory rows to prevent concurrent deductions
             sale = Sale.objects.create(
-                total=Decimal(str(data['total'])),
-                received=Decimal(str(data['received'])),
+                cashier=cashier,
+                total=total,
+                received=received,
                 date=parsed_date,
                 method=data.get('method', 'cash'),
                 transaction_id=transaction_id,
                 device_id=data.get('deviceId'),
             )
 
-            # Collect inventory PKs to lock them all at once
-            product_ids = [int(item['id']) for item in data['items']]
-            inventories = {inv.product_id: inv for inv in Inventory.objects.filter(product_id__in=product_ids).select_for_update()}
+            product_ids = [int(item['id']) for item in items]
+            inventories = {
+                inventory.product_id: inventory
+                for inventory in Inventory.objects.filter(product_id__in=product_ids).select_for_update()
+            }
 
-            for item in data['items']:
-                product = Product.objects.get(id=item['id'])
+            for item in items:
+                product = Product.objects.get(id=int(item['id']))
                 sale_quantity = int(item.get('quantityUnits') or item.get('qty') or 0)
                 unit_price = Decimal(str(item.get('price') or 0))
                 line_total = Decimal(str(item.get('total') or 0))
-
                 if sale_quantity <= 0:
-                    raise ValueError(f"Invalid quantity for {product.name}")
+                    raise ValueError(f'Invalid quantity for {product.name}')
 
-                inventory = inventories.get(product.id) or product.inventory
-
+                inventory = inventories.get(product.id)
+                if inventory is None:
+                    raise ValueError(f'Inventory record missing for {product.name}')
                 if inventory.quantity < sale_quantity:
-                    raise ValueError(f"Insufficient stock for {product.name}: only {inventory.quantity} left")
+                    raise ValueError(f'Insufficient stock for {product.name}: only {inventory.quantity} left')
 
-                sale_item = SaleItem.objects.create(
+                SaleItem.objects.create(
                     sale=sale,
                     product=product,
                     quantity=sale_quantity,
                     price=unit_price,
                     itemTotal=line_total,
                 )
-
-                # use F expression to avoid race conditions
                 inventory.quantity = F('quantity') - sale_quantity
                 inventory.save(update_fields=['quantity'])
-                inventory.refresh_from_db()
+                inventory.refresh_from_db(fields=['quantity'])
 
                 StockMovement.objects.create(
                     product=product,
@@ -98,18 +136,14 @@ def checkout(request):
                     movement_type='sold',
                 )
 
-        return JsonResponse({'message': 'sale Saved successfully'})
-    except Exception as e:
+        return JsonResponse({'message': 'sale Saved successfully', 'cashier_id': cashier.pk})
+    except (KeyError, TypeError, ValueError, InvalidOperation, Product.DoesNotExist) as error:
+        logger.warning('Checkout payload rejected: %s', error)
+        return JsonResponse({'error': 'Invalid sale data or insufficient inventory'}, status=400)
+    except Exception:
         logger.exception('Checkout request failed')
-        return JsonResponse({'error': str(e)}, status=400)
-    # traceback.print_exc()
-    # return JsonResponse({
-    #     "error": str(e),
-    #     "type": type(e).__name__
-    # }, status=400)
-    
+        return JsonResponse({'error': 'Sale could not be saved; retry using the same transaction ID'}, status=500)
 
 
-#saver healthcheck endpoint
 def health_check(request):
-    return JsonResponse({"status": "ok"})
+    return JsonResponse({'status': 'ok'})

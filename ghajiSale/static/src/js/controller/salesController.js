@@ -45,6 +45,7 @@ const controlSearchResults = function () {
 // Debounced wrapper — waits 500 ms after the last keystroke
 const controlSearchDebounced = function () {
   clearTimeout(searchTimer);
+  if (!searchView.getQuery()) return productsView.renderMessage("Type a product name or scan a barcode");
   productsView.renderSpinner();
 
   searchTimer = setTimeout(() => {

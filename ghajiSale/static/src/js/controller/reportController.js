@@ -72,6 +72,7 @@ const controlDisplayReportCards = async (date)=>{
     await model.fetchDailySummary(date)
     console.log(model.state.dailySummary);
     reportView.renderReportCards(model.state.dailySummary)
+    reportView.renderEmployeeSales(model.state.dailySummary)
   }
   catch(error){
     handleError(error.message)

@@ -1,7 +1,9 @@
 
 .categories, .cartItemContainer{
     overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
+    
+     /* Firefox */
 }
 .categories .neo-btn{
     flex-shrink: 0;
@@ -116,9 +118,10 @@
 tbody tr{
     position: relative;
 }
+
 /* cart Table */
 .cartItem th, .cartItem td {
-    padding: 12px 0px;
+    padding: 8px 0px;
     border-bottom: 1px solid #ddd;
 }
 
@@ -130,11 +133,14 @@ tbody tr{
     );
 }
 .cartItem th{
+    padding: 5px ;
     background-image: linear-gradient(
         135deg,
         #141E30 ,
-        #8e9eab 
+        blue
+
     );
+    
 }
 .cartBox table thead{
     z-index:2;
@@ -144,7 +150,7 @@ tbody tr{
     background-color: var(--color-gray-300);
 }
 .cartBox thead tr{
-    background-color: var(--color--400);
+    background-color: var(--color-gray-300);
 }
 .cartItem tr:hover {
     background-color: #f1f1f1;

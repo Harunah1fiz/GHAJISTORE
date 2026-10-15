@@ -81,6 +81,8 @@ function init(){
     product_listView.addHandlerMoreDetail(ControlSimpleProduct)
     product_listView.addHandlerSaveChanges(ControlSaveChanges)
     
+    product_listView.addHandlerClose()
+    
 
 }
 init()

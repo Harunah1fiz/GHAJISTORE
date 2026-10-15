@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { OfflineSale, storage } from "./utils/storage.js";
-import { generateTransactionId, getDeviceId, calculatePackPrice } from "./helper.js";
+import { generateTransactionId, getDeviceId, calculatePackPrice, getCSRFToken } from "./helper.js";
 
 // ── Application State ─────────────────────────────────────────────────────────
 export const state = {
@@ -499,6 +499,13 @@ export const checkServer = async function () {
   }
 };
 
+const getOfflineAttributionTicket = function () {
+  const ticket = document.querySelector('meta[name="offline-attribution-ticket"]')?.content;
+  if (ticket) localStorage.setItem("offline-attribution-ticket", ticket);
+  return ticket || localStorage.getItem("offline-attribution-ticket");
+};
+getOfflineAttributionTicket();
+
 export const checkoutTransaction = async function (transaction) {
   console.log(JSON.stringify(transaction, null, 2));
 
@@ -513,7 +520,11 @@ export const checkoutTransaction = async function (transaction) {
 
     const res = await fetch("/sales/api/checkout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken(),
+      },
       body: JSON.stringify(transaction),
     });
 
@@ -530,10 +541,16 @@ export const checkoutTransaction = async function (transaction) {
 
     try {
       let currOfflineSale = OfflineSale.getOfflineSales() || [];
+      const attributionTicket = getOfflineAttributionTicket();
+      if (!attributionTicket) {
+        throw new Error("Offline attribution ticket is unavailable. Reload the POS while online before taking offline sales.");
+      }
 
       // TRANSACTION ID GENERATION + OFFLINE QUEUE: Store transaction with ID metadata
       currOfflineSale.push({
         ...transaction,
+        offlineSync: true,
+        offlineAttributionTicket: attributionTicket,
         syncStatus: "pending",
         syncAttempt: 0,
       });
@@ -595,8 +612,12 @@ export const syncOfflineSales = async function () {
 
       const res = await fetch("/sales/api/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tx),
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ ...tx, offlineSync: true }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -608,12 +629,14 @@ export const syncOfflineSales = async function () {
       }
 
       tx.syncStatus = "synced";
+      tx.lastSyncError = "";
       synced++;
       console.log(`Transaction ${tx.transactionId} synced successfully`);
     } catch (err) {
       tx.syncStatus = "pending";
       let retryCount = tx.syncAttempt || 0;
       tx.syncAttempt = retryCount + 1;
+      tx.lastSyncError = err.message || "Sync failed";
       failed++;
       console.error(
         `Failed to sync sale (attempt ${tx.syncAttempt}):`,

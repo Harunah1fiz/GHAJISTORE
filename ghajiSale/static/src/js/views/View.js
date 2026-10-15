@@ -42,7 +42,8 @@ export default class View{
     renderSpinner(large){
         let lg = large === "lg" ? "larger" : ""
         const markup = `
-        <div class="spinner center ${lg}">
+        <div class="spinner ${lg} h-20">
+        <div>
         <div class="spinner-blade"></div>
         <div class="spinner-blade"></div>
         <div class="spinner-blade"></div>
@@ -55,6 +56,7 @@ export default class View{
         <div class="spinner-blade"></div>
         <div class="spinner-blade"></div>
         <div class="spinner-blade"></div>
+        </div>
         </div>
         `
         this._clear()
@@ -157,9 +159,10 @@ export default class View{
         }
     
             renderMessage(message = this._message){
+                
             const markup = `
-            <div class="absolute top-1 font-bold text-[15px] text-blue-600 left-5 flex items-center gap-1.5">
-                🙂
+            <div class="absolute top-1 font-bold text-[15px] text-red-600 left-5 flex items-center gap-1.5">
+            <i data-lucide="smile" class="w-8 h-8"></i>
                 <span>${message}</span>
             </div>
             `;
@@ -169,6 +172,7 @@ export default class View{
 
     
      _clear(){
+        lucide.createIcons();
         this._parentElement.innerHTML = '';
     }
 

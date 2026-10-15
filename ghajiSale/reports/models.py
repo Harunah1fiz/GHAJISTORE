@@ -27,6 +27,13 @@ class Report(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='operational_reports',
+    )
 
 
 class Expense(models.Model):
@@ -120,10 +127,21 @@ class Notification(models.Model):
     report = models.ForeignKey(
         Report,
         on_delete=models.CASCADE,
-        related_name='notifications'
+        related_name='notifications',
+        null=True,
+        blank=True,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='store_notifications',
     )
     title = models.CharField(max_length=200)
     message = models.TextField()
+    icon = models.CharField(max_length=50, default='bell')
+    link = models.CharField(max_length=500, blank=True, default='')
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -131,4 +149,22 @@ class Notification(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Notification for {self.report.report_type} - {self.title}"
+        if self.report_id:
+            return f"Notification for {self.report.report_type} - {self.title}"
+        return self.title
+
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='store_activity',
+    )
+    action = models.CharField(max_length=200)
+    detail = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']

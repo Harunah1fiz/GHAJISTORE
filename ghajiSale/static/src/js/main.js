@@ -22,7 +22,7 @@ const deleteAllBtn = document.querySelector('#delete-all-notifications');
 const messageElement = document?.querySelector('.disappear');
 const getCSRFToken = () => document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
-
+lucide.createIcons();
 if(messageElement){
     setTimeout(() => {
         messageElement.classList.add('hidden');

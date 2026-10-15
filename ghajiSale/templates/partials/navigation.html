@@ -74,6 +74,18 @@
                     </ul>
                     {% endif %}
 
+                    {% if show_staff_management %}
+                    <p class="category">Staff</p>
+                    <ul class="px-3">
+                        <li class="{% if active_page == 'Staff Management' %}active{% endif %}">
+                            <a href="{% url 'staff_management' %}">
+                                <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
+                                <span>Manage Staff</span>
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
+
                 </nav>
 
                 <div class="logout px-6 py-4 ">

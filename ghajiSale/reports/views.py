@@ -5,9 +5,9 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_date
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
 
-from accounts.decorators import login_required_json, group_required
+from accounts.decorators import login_required_json, role_required
 from .models import (
     Report,
     Expense,
@@ -22,13 +22,16 @@ from product.models import Product, Inventory
 from analytics.views import get_profit_for_queryset
 from .services import report_to_summary, log_activity, create_notification
 from django.db.models import Q
-from accounts.decorators import login_required_json
 
 import json
 
 EXPENSE_CATEGORY_CHOICES = {choice[0] for choice in Expense.CATEGORY_CHOICES}
 INCIDENT_SEVERITY_CHOICES = {choice[0] for choice in Incident.SEVERITY_CHOICES}
 DEFAULT_STOCK_ADJUSTMENT_TYPE = "deducted"
+
+
+def _is_management_user(user):
+    return user.is_superuser or user.groups.filter(name__in=('Admin', 'Manager')).exists()
 
 
 def _parse_selected_date(request):
@@ -73,11 +76,17 @@ def _create_system_notification(title, message, user=None, icon='bell'):
     create_notification(title=title, message=message, user=user, icon=icon, report=None)
 
 
-def _collect_reports_for_date(selected_date):
+def _collect_reports_for_date(selected_date, user=None):
     expense_reports = Expense.objects.select_related('report').filter(report__created_at__date=selected_date, report__is_deleted=False)
     stock_reports = StockAdjustment.objects.select_related('report', 'product').filter(report__created_at__date=selected_date, report__is_deleted=False)
     cash_reports = CashDifference.objects.select_related('report').filter(report__created_at__date=selected_date, report__is_deleted=False)
     incident_reports = Incident.objects.select_related('report').filter(report__created_at__date=selected_date, report__is_deleted=False)
+    is_manager = user and _is_management_user(user)
+    if user and not is_manager:
+        expense_reports = expense_reports.filter(report__created_by=user)
+        stock_reports = stock_reports.filter(report__created_by=user)
+        cash_reports = cash_reports.filter(report__created_by=user)
+        incident_reports = incident_reports.filter(report__created_by=user)
     
 
     reports = [
@@ -96,26 +105,58 @@ def _collect_reports_for_date(selected_date):
     return reports
 
 
+@login_required_json
+@role_required('Admin', 'Manager', 'Hybrid', 'Cashier')
 def daily_report_data(request):
     selected_date, error = _parse_selected_date(request)
     if error:
         return error
 
+    is_manager = _is_management_user(request.user)
     sales = Sale.objects.filter(date__date=selected_date)
+    if not is_manager:
+        sales = sales.filter(cashier=request.user)
     cash_sales = sales.filter(method='cash').aggregate(total=Sum('total'))['total'] or Decimal('0')
     cardtransfer_sales = sales.filter(method__in=['pos', 'transfer']).aggregate(total=Sum('total'))['total'] or Decimal('0')
     total_sales = sales.aggregate(total=Sum('total'))['total'] or Decimal('0')
     num_transactions = sales.count()
-    items = SaleItem.objects.filter(sale__date__date=selected_date)
+    items = SaleItem.objects.filter(sale__in=sales)
     items_sold = items.aggregate(total=Sum('quantity'))['total'] or 0
     profit = get_profit_for_queryset(items) or Decimal('0')
 
-    yesterday_sales = Sale.objects.filter(date__date=selected_date - timedelta(days=1)).aggregate(total=Sum('total'))['total'] or Decimal('0')
-    total_expenses = Expense.objects.filter(report__created_at__date=selected_date, report__is_deleted=False).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    yesterday_qs = Sale.objects.filter(date__date=selected_date - timedelta(days=1))
+    expenses = Expense.objects.filter(report__created_at__date=selected_date, report__is_deleted=False)
+    if not is_manager:
+        yesterday_qs = yesterday_qs.filter(cashier=request.user)
+        expenses = expenses.filter(report__created_by=request.user)
+    yesterday_sales = yesterday_qs.aggregate(total=Sum('total'))['total'] or Decimal('0')
+    total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0')
     expected_cash = yesterday_sales + cash_sales - total_expenses
-    total_stock_adjustments = StockAdjustment.objects.filter(report__created_at__date=selected_date, report__is_deleted=False).count()
-    total_cash_differences = CashDifference.objects.filter(report__created_at__date=selected_date, report__is_deleted=False).count()
-    total_incidents = Incident.objects.filter(report__created_at__date=selected_date, report__is_deleted=False).count()
+    operational_reports = Report.objects.filter(created_at__date=selected_date, is_deleted=False)
+    if not is_manager:
+        operational_reports = operational_reports.filter(created_by=request.user)
+    total_stock_adjustments = StockAdjustment.objects.filter(report__in=operational_reports).count()
+    total_cash_differences = CashDifference.objects.filter(report__in=operational_reports).count()
+    total_incidents = Incident.objects.filter(report__in=operational_reports).count()
+
+    employee_sales = []
+    unattributed_sales = Sale.objects.filter(date__date=selected_date, cashier__isnull=True)
+    if is_manager:
+        grouped_sales = sales.filter(cashier__isnull=False).values(
+            'cashier_id', 'cashier__username', 'cashier__first_name', 'cashier__last_name',
+        ).annotate(total=Sum('total'), transactions=Count('id')).order_by('cashier__username')
+        for row in grouped_sales:
+            cashier_items = SaleItem.objects.filter(sale__in=sales.filter(cashier_id=row['cashier_id']))
+            employee_sales.append({
+                'user_id': row['cashier_id'],
+                'username': row['cashier__username'],
+                'name': ' '.join(filter(None, (row['cashier__first_name'], row['cashier__last_name']))) or row['cashier__username'],
+                'total_sales': float(row['total'] or 0),
+                'transactions': row['transactions'],
+                'items_sold': cashier_items.aggregate(total=Sum('quantity'))['total'] or 0,
+                'profit': float(get_profit_for_queryset(cashier_items) or Decimal('0')),
+            })
+        unattributed_sales = unattributed_sales.aggregate(total=Sum('total'), count=Count('id'))
 
     return JsonResponse({
         'summary': {
@@ -131,8 +172,11 @@ def daily_report_data(request):
             'cash_differences': total_cash_differences,
             'incidents': total_incidents,
             'opening_balance': float(yesterday_sales),
+            'unattributed_sales': float(unattributed_sales.get('total') or 0) if isinstance(unattributed_sales, dict) else 0.0,
+            'unattributed_transactions': unattributed_sales.get('count', 0) if isinstance(unattributed_sales, dict) else 0,
         },
-        'reports': _collect_reports_for_date(selected_date),
+        'employee_sales': employee_sales,
+        'reports': _collect_reports_for_date(selected_date, request.user),
     })
 
 
@@ -148,6 +192,7 @@ def notifications_list(request):
             'title': n.title,
             'message': n.message,
             'icon': n.icon,
+            'link': n.link,
             'is_read': n.is_read,
             'created_at': n.created_at.isoformat(),
         })
@@ -199,6 +244,7 @@ def notification_clear_all(request):
     return JsonResponse({'success': True})
 
 
+@login_required_json
 def report_list_create(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET is allowed on this endpoint.'}, status=405)
@@ -207,7 +253,7 @@ def report_list_create(request):
     if error:
         return error
 
-    return JsonResponse({'reports': _collect_reports_for_date(selected_date)})
+    return JsonResponse({'reports': _collect_reports_for_date(selected_date, request.user)})
 
 
 def _get_request_body(request):
@@ -217,13 +263,14 @@ def _get_request_body(request):
         return None
 
 
-def _create_report(report_type, selected_date):
-    report = Report.objects.create(report_type=report_type)
+def _create_report(report_type, selected_date, user):
+    report = Report.objects.create(report_type=report_type, created_by=user)
     report.created_at = _create_datetime_for_date(selected_date)
     report.save(update_fields=['created_at'])
     return report
 
 
+@login_required_json
 def create_expense(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
@@ -254,7 +301,7 @@ def create_expense(request):
     if not description:
         return _format_validation_error('Description is required')
 
-    report = _create_report('expense', selected_date)
+    report = _create_report('expense', selected_date, request.user)
     expense = Expense.objects.create(
         report=report,
         category=category,
@@ -267,6 +314,7 @@ def create_expense(request):
     return JsonResponse({'success': True, 'report': report_to_summary('expense', expense)}, status=201)
 
 
+@login_required_json
 def create_stock_adjustment(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
@@ -302,7 +350,7 @@ def create_stock_adjustment(request):
     if not reason:
         return _format_validation_error('Reason is required')
 
-    report = _create_report('stock', selected_date)
+    report = _create_report('stock', selected_date, request.user)
     stock_report = StockAdjustment.objects.create(
         report=report,
         product=product,
@@ -321,6 +369,7 @@ def create_stock_adjustment(request):
     return JsonResponse({'success': True, 'report': report_to_summary('stock', stock_report)}, status=201)
 
 
+@login_required_json
 def create_cash_difference(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
@@ -350,7 +399,7 @@ def create_cash_difference(request):
         return _format_validation_error('Reason is required')
 
     difference = counted - expected
-    report = _create_report('cash', selected_date)
+    report = _create_report('cash', selected_date, request.user)
     cash_report = CashDifference.objects.create(
         report=report,
         expected=expected,
@@ -364,6 +413,7 @@ def create_cash_difference(request):
     return JsonResponse({'success': True, 'report': report_to_summary('cash', cash_report)}, status=201)
 
 
+@login_required_json
 def create_incident(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
@@ -389,7 +439,7 @@ def create_incident(request):
     if not description:
         return _format_validation_error('Description is required')
 
-    report = _create_report('incident', selected_date)
+    report = _create_report('incident', selected_date, request.user)
     incident = Incident.objects.create(
         report=report,
         title=title,
@@ -450,12 +500,17 @@ def _validate_update_payload(report_type, body):
     return None, 'Unknown report type'
 
 
+@login_required_json
 def update_report(request, report_type, report_id):
     if request.method not in ('PUT', 'PATCH'):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     item = _get_report_item(report_type, report_id)
     if not item:
         return JsonResponse({'error': 'Report not found'}, status=404)
+    if report_type in ('expense', 'stock') and not _is_management_user(request.user):
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    if not _is_management_user(request.user) and item.report.created_by_id != request.user.id:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
     body = _get_request_body(request)
     if body is None: return _format_validation_error('JSON body is required')
     values, error = _validate_update_payload(report_type, body)
@@ -473,11 +528,16 @@ def update_report(request, report_type, report_id):
     return JsonResponse({'success': True, 'report': report_to_summary(report_type, item)})
 
 
+@login_required_json
 def delete_report(request, report_type, report_id):
     if request.method != 'DELETE':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     item = _get_report_item(report_type, report_id)
     if not item: return JsonResponse({'error': 'Report not found'}, status=404)
+    if report_type in ('expense', 'stock') and not _is_management_user(request.user):
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    if not (request.user.is_superuser or request.user.groups.filter(name__in=('Admin', 'Manager')).exists()) and item.report.created_by_id != request.user.id:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
     item.report.is_deleted = True
     item.report.save(update_fields=['is_deleted'])
     log_activity(request.user, 'Report deleted', f'{report_type.title()} report #{report_id} deleted.')
@@ -490,6 +550,7 @@ def delete_report(request, report_type, report_id):
     return JsonResponse({'success': True})
 
 
+@login_required_json
 def end_shift(request):
     if request.method != 'POST': return JsonResponse({'error': 'Method not allowed'}, status=405)
     selected_date, error = _parse_selected_date(request)
@@ -501,16 +562,16 @@ def end_shift(request):
     notes = str(body.get('notes', '')).strip()
     if counted < 0: return _format_validation_error('Counted cash cannot be negative')
     if not notes: return _format_validation_error('Notes are required')
-    if EndShift.objects.filter(report__created_at__date=selected_date, report__is_deleted=False).exists():
+    if EndShift.objects.filter(report__created_at__date=selected_date, report__is_deleted=False, user=request.user).exists():
         return JsonResponse({'error': 'An end-of-shift report already exists for this day'}, status=409)
-    opening_balance = Sale.objects.filter(date__date=selected_date - timedelta(days=1)).aggregate(total=Sum('total'))['total'] or Decimal('0')
-    sales = Sale.objects.filter(date__date=selected_date)
-    expected = opening_balance + (sales.filter(method='cash').aggregate(total=Sum('total'))['total'] or Decimal('0')) - (Expense.objects.filter(report__created_at__date=selected_date, report__is_deleted=False).aggregate(total=Sum('amount'))['total'] or Decimal('0'))
+    opening_balance = Sale.objects.filter(date__date=selected_date - timedelta(days=1), cashier=request.user).aggregate(total=Sum('total'))['total'] or Decimal('0')
+    sales = Sale.objects.filter(date__date=selected_date, cashier=request.user)
+    expected = opening_balance + (sales.filter(method='cash').aggregate(total=Sum('total'))['total'] or Decimal('0')) - (Expense.objects.filter(report__created_at__date=selected_date, report__is_deleted=False, report__created_by=request.user).aggregate(total=Sum('amount'))['total'] or Decimal('0'))
     difference = counted - expected
     with transaction.atomic():
-        report = _create_report('cash', selected_date)
+        report = _create_report('cash', selected_date, request.user)
         cash = CashDifference.objects.create(report=report, expected=expected, counted=counted, difference=difference, reason=notes)
-        EndShift.objects.create(report=report, user=request.user if request.user.is_authenticated else None, opening_balance=opening_balance, expected_cash=expected, counted_cash=counted, difference=difference, notes=notes)
+        EndShift.objects.create(report=report, user=request.user, opening_balance=opening_balance, expected_cash=expected, counted_cash=counted, difference=difference, notes=notes)
     _create_system_notification(
         title='Shift ended',
         message=f'End of shift completed for {selected_date.isoformat()} with {difference:+.2f} cash difference.',

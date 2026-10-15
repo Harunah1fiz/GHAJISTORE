@@ -3,7 +3,7 @@ from django.conf import settings
 from product.models import Product
 # Create your models here.
 class Sale(models.Model):
-    #cashier = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete= models.CASCADE,)
+    cashier = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete= models.SET_NULL, null=True, blank=True, related_name = 'sales')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     received = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateTimeField()

@@ -33,6 +33,10 @@ def group_required(group_names, login_url='login', redirect_field_name=REDIRECT_
     return decorator
 
 
+def role_required(*roles):
+    return group_required(roles)
+
+
 def login_required_json(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):

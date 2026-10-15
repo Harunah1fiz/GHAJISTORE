@@ -649,16 +649,16 @@
 }
 
 .success{
-    color:green;
+    color:green !important;
 }
 .warning{
-    color:goldenrod;
+    color:goldenrod !important;
 }
 .info{
-    color:#1E90FF;
+    color:#1E90FF !important;
 }
 .danger{
-    color:red;
+    color:red !important;
 }
 
 /* business information */
@@ -842,4 +842,10 @@
 .business-status.danger{
     background:rgba(239,68,68,.12);
     color:#ef4444;
+}
+.snap-scroll {
+  scroll-snap-type: y mandatory;
+}
+.snap-scroll > * {
+  scroll-snap-align: start;
 }

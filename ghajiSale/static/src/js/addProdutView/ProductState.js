@@ -40,14 +40,16 @@ addHandlerAddStock(handler) {
 
     addStockBtn.addEventListener("click", () => {
 
-        const quantityInput = this._parentElement.querySelector("#Add-quantity");
+        // Pack products are restocked by whole cases; the server converts these
+        // case counts into individual stock units.
+        const quantityInput = this._parentElement.querySelector("#Add-case-quantity, #Add-quantity");
         const lowInventoryInput = this._parentElement.querySelector("#inventory-report");
         const expiryInput = this._parentElement.querySelector("#batch-expiry");
         const productId = document.querySelector("#product_id").value;
 
         const quantity = Number(quantityInput.value);
         const lowInventory = Number(lowInventoryInput.value);
-        const expiry_date = expiryInput.value;
+        const expiry_date = expiryInput?.value || "";
 
         if (!productId) return;
 

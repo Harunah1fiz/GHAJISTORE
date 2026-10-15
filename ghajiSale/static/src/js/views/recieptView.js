@@ -50,7 +50,7 @@ class ReceiptView extends View {
                 <p class="text-xs">${this._data.date}</p>
             </div>
 
-            <div class="border-t border-b py-2">
+            <div class="border-t border-b py-2 overflow-x-hidden max-h-40">
                 ${this._data.items
                   .map(
                     (item) => `

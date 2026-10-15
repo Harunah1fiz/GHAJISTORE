@@ -1,6 +1,7 @@
+import ModalView from "../modelView.js";
 import View from "../View.js";
 
-class ProductList extends View {
+class ProductList extends ModalView {
   _superParent = document.querySelector(".product__list");
 _parentElement = document.querySelector(".modal-detail");
   _overlay = document.querySelector(".modal-overlay");
@@ -54,7 +55,8 @@ _parentElement = document.querySelector(".modal-detail");
                                     <div class="modalContent">
                                     <div class="flex gap-1.5 w-full  ">
                                     <figure class="w-50">
-                                        <img src="${this._data.imageUrl}" alt="" srcset="" class="w-32 h-32">
+                                    ${this._data.imageUrl ? `<img src="${this._data.imageUrl}" alt="" srcset="" class="w-32 h-32">` : `<div class="w-32 h-32 bg-gray-200 flex items-center justify-center"><span class="text-gray-500">No Image</span></div>`}
+                                        
                                     </figure>
                                     <ul>
                                         <li>
@@ -123,6 +125,7 @@ _parentElement = document.querySelector(".modal-detail");
                                     </ul> -->
                                     <div class="modalActions flex justify-end gap-3 mt-4">
                                         <button class="cancelChanges neo-btn neutral neo-actions px-3 exit">cancel</button>
+                                        <button><a href="${this._data.edit_links.product}" class="neo-btn success neo-actions">Edit Product</a></button>
                                         <button class="px-3 saveChanges neo-btn success neo-actions">Save Changes</button>
                                     </div>
                                     </div>

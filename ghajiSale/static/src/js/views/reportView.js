@@ -111,6 +111,10 @@ class ReportView {
   renderReportCards(data) {
     const summary = data?.summary || data || {};
     this._summary = summary;
+    const setText = (selector, value) => {
+      const element = document.querySelector(selector);
+      if (element) element.textContent = value;
+    };
     const formatMoney = (value) => {
       if (value === null || value === undefined || Number.isNaN(Number(value)))
         return "₦0.00";
@@ -121,27 +125,66 @@ class ReportView {
       }).format(Number(value));
     };
 
-    document.querySelector("#total-sales").textContent = formatMoney(
-      summary.total_sales || 0,
-    );
-    document.querySelector("#cash-sales").textContent = formatMoney(
-      summary.cash_sales || 0,
-    );
-    document.querySelector("#card-transfer").textContent = formatMoney(
-      summary.card_transfer || 0,
-    );
-    document.querySelector("#num-transactions").textContent =
-      summary.num_transactions ?? 0;
-    document.querySelector("#items-sold").textContent = summary.items_sold ?? 0;
-    document.querySelector("#expected-cash").textContent = formatMoney(
-      summary.expected_cash || 0,
-    );
-    document.querySelector("#opening-balance").textContent = formatMoney(
-      summary.opening_balance || 0,
-    );
-    document.querySelector("#total-profit").textContent = formatMoney(
-      summary.profit || 0,
-    );
+    setText("#total-sales", formatMoney(summary.total_sales || 0));
+    setText("#cash-sales", formatMoney(summary.cash_sales || 0));
+    setText("#card-transfer", formatMoney(summary.card_transfer || 0));
+    setText("#num-transactions", summary.num_transactions ?? 0);
+    setText("#items-sold", summary.items_sold ?? 0);
+    setText("#expected-cash", formatMoney(summary.expected_cash || 0));
+    setText("#opening-balance", formatMoney(summary.opening_balance || 0));
+    setText("#total-profit", formatMoney(summary.profit || 0));
+  }
+
+  renderEmployeeSales(data) {
+    const rows = document.querySelector("#employee-sales-rows");
+    if (!rows) return;
+    const formatMoney = (value) => new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2,
+    }).format(Number(value || 0));
+    rows.replaceChildren();
+    for (const employee of data?.employee_sales || []) {
+      const row = document.createElement("tr");
+      for (const [value, className] of [
+        [employee.name || employee.username, "p-2"],
+        [formatMoney(employee.total_sales), "p-2 text-right"],
+        [employee.transactions, "p-2 text-right"],
+        [employee.items_sold, "p-2 text-right"],
+        [formatMoney(employee.profit), "p-2 text-right"],
+      ]) {
+        const cell = document.createElement("td");
+        cell.className = className;
+        cell.textContent = value;
+        row.appendChild(cell);
+      }
+      rows.appendChild(row);
+    }
+    if (!rows.children.length) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = 5;
+      cell.className = "p-2 text-gray-500";
+      cell.textContent = "No employee sales for this date.";
+      row.appendChild(cell);
+      rows.appendChild(row);
+    }
+    const unattributed = document.querySelector("#unattributed-sales-row");
+    if (unattributed) {
+      unattributed.replaceChildren();
+      const row = document.createElement("tr");
+      row.className = "border-t font-semibold";
+      const label = document.createElement("td");
+      label.colSpan = 2;
+      label.className = "p-2";
+      label.textContent = `Legacy/unattributed sales (${data?.summary?.unattributed_transactions || 0} transactions)`;
+      const amount = document.createElement("td");
+      amount.colSpan = 3;
+      amount.className = "p-2 text-right";
+      amount.textContent = formatMoney(data?.summary?.unattributed_sales);
+      row.append(label, amount);
+      unattributed.appendChild(row);
+    }
   }
 
   renderReportsList(reports) {

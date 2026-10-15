@@ -164,6 +164,28 @@ sources. The repository root contains `requirements.txt` and the deploy script.
    from collection. Uploaded media is not collected as static and must not be
    removed when updating code.
 
+### Role-permissions release notes
+
+The role-permissions update adds the `Admin`, `Manager`, `Hybrid`, and `Cashier`
+groups idempotently during migration. It does not create users or change
+existing user memberships. Assign existing staff to the appropriate group
+before they use the restricted routes. Managers can create and manage ordinary
+Cashier/Hybrid accounts; only an Admin can assign Admin or superuser status.
+
+Before deploying, take a database backup. The release includes a nullable
+cashier foreign key for sales and nullable report ownership, so historical
+sales/reports remain present and unassigned. Managers' daily report includes
+those legacy sales in a separate unattributed total and count. Apply the
+committed migrations with the deployment script; this worktree has not been
+migrated against the production database.
+
+New offline POS sales carry a signed employee-attribution ticket issued when
+the authenticated POS page loads. Sync requests require that ticket and remain
+CSRF-protected. Pending browser-queue transactions created before this update
+have no verifiable employee ticket: synchronization will leave them pending
+and report the rejection instead of guessing which employee made the sale.
+Review those old pending entries before attempting to clear the browser queue.
+
 ### Optional GitHub-triggered deployment
 
 The repository includes a GitHub Actions workflow for push-triggered deploys

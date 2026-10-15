@@ -22,7 +22,7 @@ export default class ModalView extends View {
         this._parentElement.addEventListener("click", (e) => {
             if (
                 e.target.closest(".close-modal") ||
-                e.target.classList.contains("modal-overlay")
+                e.target.classList.contains("modal-overlay") || e.target.classList.contains("cancelChanges")
             ) {
                 this.close();
             }

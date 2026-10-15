@@ -1,6 +1,5 @@
 import json
 from unicodedata import category
-from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 from django.shortcuts import render,redirect, get_object_or_404
@@ -414,19 +413,21 @@ def product(request):
 # product quickview
 def productQuickView(request, pk):
     product = Product.objects.get(pk=pk)
-    
     data ={
         "id": product.id,
         "name": product.name,
         "category":product.category.name,
-        "product_image": product.image.url,
+        "product_image": product.image.url if product.image else None,
         "status": product.is_active,
         "quantity": product.inventory.quantity,
         "price": product.pricing.retail_price,
         "low_stock": product.inventory.is_low_stock(),
-        "total_profit": product.get_total_profit(),
+        "edit_links": {
+                        "product": f"/product/products/update/{product.id}",
+                    }
     }
-    print(data)
+    if request.user.is_superuser or request.user.groups.filter(name__in=('Admin', 'Manager')).exists():
+        data['total_profit'] = product.get_total_profit()
     return JsonResponse(data)
 
 
@@ -615,6 +616,7 @@ def active_products(request):
             "packSize": p["pricing__pack_size"],
 
             "stock": p["inventory__quantity"],
+            
         })
     return JsonResponse(product_list,safe=False)
 
@@ -662,7 +664,6 @@ def edit_product(request, pk):
     return render(request, 'product/add_product.html', context)
 
 
-@csrf_exempt
 def add_stock(request, pk):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -672,6 +673,8 @@ def add_stock(request, pk):
         low_inventory_threshold = int(data.get('lowInventory', 0))
         date_expiry = data.get('expiry_date') or None
         product  = Product.objects.get(pk=pk)
+        if product.pricing.is_pack:
+            quantity_to_add *= product.pricing.pack_size
         attribute = product.productattribute
         inventory = product.inventory
         batch = InventoryBatch.objects.create(
@@ -702,7 +705,6 @@ def add_stock(request, pk):
         return JsonResponse({'error': 'Product not found'}, status=404)
 
 
-@csrf_exempt
 def toggleProductStatus(request, pk):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)

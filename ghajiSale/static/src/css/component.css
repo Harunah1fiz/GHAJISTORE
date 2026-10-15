@@ -568,10 +568,10 @@
     border-radius: 1rem;
     border: 1px solid var(--color-gray-300);
     z-index: 15;
-    box-shadow: 0.3rem 0.3rem 0.5rem var(--dark),
-        -0.3em -0.3em 0.5em var(--light);
+    box-shadow: 0.3rem 0.3rem 0.5rem rgba(44, 100, 230, 0.159),
+        -0.2em -0.2em 0.5rem #ffffff;
 
-    border: rebeccapurple;
+    
 }
 .model-header{
     display: flex;
@@ -684,6 +684,7 @@
     justify-content: center;
     transform: translateX(-20px);
     height: 2rem;
+    
     }
     .spinner > div{
         position: relative;
@@ -692,14 +693,14 @@
         font-size: 40px;
     }
 
-    .spinner.center {
+    /* .spinner.center {
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
     margin: 0 auto;
-    }
+    } */
 
     .spinner .spinner-blade {
     position: absolute;

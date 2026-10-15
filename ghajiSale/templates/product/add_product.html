@@ -194,15 +194,22 @@
                     class="panel-1 {% if product_form.instance.pk %}panel--active{% endif %} panel__content animate-fadeInLeft delay-200"
                 >
                     <div class="flex items-center justify-between mb-3">
-                    <label for="product">Add to stock:</label>
-                    
+                    {% if product.pricing.is_pack %}
+                        <label for="">Case Numbers:</label>
+                        <input type="number" id="Add-case-quantity" name="add-case-quantity" class="w-30 border border-gray-300 rounded-md px-3 py-2" value="0">
+
+                    {% else %}
+                    <label for="product">Add Unit:</label>
                     <input type="number" id="Add-quantity" name="add-quantity" class="w-30 border border-gray-300 rounded-md px-3 py-2" value="0">
+                    {% endif %}
                     </div>
                     <div class="flex items-center justify-between mb-3">
                     <label for="inventory-report">Low Inventory Alert:</label>
                     {{ inventory_form.low_stock_threshold|add_class:"w-30 border border-gray-300 rounded-md px-3 py-2"|attr:"id:inventory-report"}}
                     <!-- <input type="number" id="inventory-report" name="product-quantity" class="w-30 border border-gray-300 rounded-md px-3 py-2" required> -->
                     </div>
+                    
+
                     {% if product.productattribute.is_expiry %}
                     <div class="flex items-center justify-between mb-3">
                     <label for="product">Expiration Date</label>
@@ -253,7 +260,7 @@
                     <div class="exp flex flex-col gap-0.5">
                         <label for="date" class="self-start">Expiration Date</label>
                         
-                        <input type="Date" id="expiry" name="expiry_date" class="w-40 border border-gray-300 rounded-md px-3 py-2 hidden animate-fadeInUp" required>
+                        <input type="Date" id="expiry" name="expiry_date" class="w-40 border border-gray-300 rounded-md px-3 py-2 hidden animate-fadeInUp">
                     </div>
                     </div>
                 </section>
