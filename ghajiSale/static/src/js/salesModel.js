@@ -378,16 +378,17 @@ const updateCartItemTotal = (cartItem) => {
 
 // STOCK SAFETY: Increase quantity with validation
 export const increaseQty = function (id) {
+  try {
   const item = state.cart.find((p) => p.id == id);
   if (!item) return;
   const product = state.products.find((p) => p.id == id);
   
   if (!product) return;
-
+console.log(product);
   // STOCK SAFETY: Prevent quantity increase if out of stock
   if (product.stock <= 0) throw new Error("Item is out of stock");
 
-  console.log(item);
+  
   if( item.saleMode === "pack"){
     item.saleMode = 'mixed'
     item.qty = item.quantityUnits
@@ -403,8 +404,11 @@ export const increaseQty = function (id) {
     
   updateCartItemTotal(item);
   calcCartTotal();
+}  catch (err) {
+  console.error("Increase quantity error:", err.message);
+  throw err;
 };
-
+}
 // STOCK SAFETY: Decrease quantity with safe restoration
 export const decreaseQty = function (id) {
   const item = state.cart.find((p) => p.id == id);

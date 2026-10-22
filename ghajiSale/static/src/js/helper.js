@@ -212,24 +212,28 @@ export const showToast = (message,type = "success", durationMs = 2000) => {
     // Remove any existing toast
     const existingToast = document.querySelector(".pos-toast");
     if (existingToast) existingToast.remove();
-
+    let color = "#4CAF50"; // Default green for success
+    if (type === "error") color = "#F44336";
+    else if (type === "warning") color = "#FF9800";
+    else if (type === "info") color = "#2196F3";
     // Create toast element
     const toast = document.createElement("div");
     toast.className = "pos-toast animate-fadeInUp";
+    if (type === "success") {}
     toast.style.cssText = `
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background:${type == 'success' ? '#10b981': 'red' } ;
+            background: ${color} ;
             color: white;
             padding: 12px 16px;
             border-radius: 6px;
             font-weight: 500;
             z-index: 9999;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-size: 14px;
+            font-size: 15px;
         `;
-    toast.textContent = message;
+    toast.innerHTML = message;
     document.body.appendChild(toast);
 
     // Auto-remove after duration

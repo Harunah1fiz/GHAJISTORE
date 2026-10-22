@@ -136,15 +136,17 @@ const controlAddtoCart = function (barcode, qty) {
 
     if (product.stock <= 0) {
       playSound("error"); // POS AUDIO: Stock error
-      return cartview.renderErrorAlert(
+      return showToast(
         `Sorry, ${product.name} is out of stock!`,
+        "error"
       );
     }
 
     if (qty > product.stock) {
       playSound("error");
-      return cartview.renderErrorAlert(
+      return showToast(
         `Only ${product.stock} ${product.name} left in stock!`,
+        "error"
       );
     }
 
@@ -171,8 +173,9 @@ const controlUpdateCart = function (type, id) {
     // STOCK SAFETY: Prevent increasing beyond stock
     if (type === "add" && product.stock <= 0) {
       playSound("error");
-      return cartview.renderErrorAlert(
+      return showToast(
         `Sorry, ${product.name} is out of stock!`,
+        "error"
       );
     }
 
@@ -186,7 +189,8 @@ const controlUpdateCart = function (type, id) {
     productsView.updateProduct(product);
   } catch (err) {
     playSound("error");
-    cartview.renderErrorAlert(err.message);
+    console.log('empty cart', model.state.cart);
+    showToast(err.message || "Cart update failed", "error");
     console.warn("Cart update error:", err.message);
   }
 };
@@ -222,7 +226,7 @@ const controlActionBtn = async function (action) {
     if (action === "cancel") {
       model.cancelTransaction();
       playSound("success"); // Cancellation confirmation
-      showToast("Transaction cancelled");
+      showToast("Transaction cancelled","info");
       // AUTO-FOCUS: Refocus scanner after cancel
       focusScannerInput();
     }
@@ -240,9 +244,10 @@ const controlActionBtn = async function (action) {
     searchView.clearInput();
     productsView.render(model.state.search.results);
   } catch (err) {
-    console.error("Action button error:", err.message);
     playSound("error");
-    totalView.renderErrorAlert(err);
+    console.error("Action button error:", err.message);
+    showToast(err.message || "Action failed", "error");
+
     totalView.render(model.state.Transaction);
   }
 };
@@ -254,6 +259,8 @@ const controlActionBtn = async function (action) {
  * AUTO-FOCUS: Refocus scanner after successful transaction
  * POS AUDIO: Play success sound on completion
  */
+
+
 const controlSaveAndPrint = async function () {
   try {
     // 1. Prepare transaction with ID
@@ -265,10 +272,12 @@ const controlSaveAndPrint = async function () {
     // 3. Decide UI message based on result
     if (result.savedOnline) {
       playSound("success"); // POS AUDIO: Success for online save
-      cartview.renderSuccessAlert("Transaction saved");
+      // cartview.renderSuccessAlert("Transaction saved");
+      showToast(`<div class="flex items-center"><i data-lucide='thumbs-up' class="w-5 h-5 mr-2"></i> Transaction Successful</div>`, "success");
     } else {
       playSound("warning"); // POS AUDIO: Warning for offline save
       cartview.renderWarningAlert("Saved offline. Will sync later");
+      showToast("Saved offline. Will sync later", "warning")
     }
 
     // 4. Update UI state
@@ -276,7 +285,7 @@ const controlSaveAndPrint = async function () {
     totalView.render(model.state.Transaction);
 
     // 5. Print receipt ONLY after successful save (online or offline)
-    recieptView.printReceipt(transaction);
+    // recieptView.printReceipt(transaction);
 
     // 6. Close receipt modal
     recieptView.close();
@@ -373,7 +382,7 @@ const handleKeyboardShortcuts = (e) => {
       if (checkoutBtn) checkoutBtn.click();
       showToast("Opening checkout...");
     } else {
-      showToast("Cart is empty");
+      showToast("Cart is empty","warning");
     }
   }
 
@@ -385,7 +394,7 @@ const handleKeyboardShortcuts = (e) => {
         cartview.render(model.state.cart);
         totalView.render(model.state.Transaction);
         focusScannerInput();
-        showToast("Cart cleared");
+        showToast("Cart cleared","info");
         playSound("success");
       }
     }
@@ -394,7 +403,7 @@ const handleKeyboardShortcuts = (e) => {
   if (e.ctrlKey && (e.key === "l" || e.key === "L")) {
     e.preventDefault();
     focusScannerInput();
-    showToast("Search focused");
+    showToast("Search focused","info");
   }
 
   // CTRL+S SHORTCUT: Clear and focus scanner input
@@ -402,7 +411,7 @@ const handleKeyboardShortcuts = (e) => {
     e.preventDefault();
     searchView.clearInput();
     focusScannerInput();
-    showToast("Scanner cleared and focused");
+    showToast("Scanner cleared and focused","info");
   }
 };
 
